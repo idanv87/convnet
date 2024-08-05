@@ -287,10 +287,10 @@ class conv_deeponet_f(nn.Module):
         n_layers = 4
         self.n = p
         # self.attention=SelfAttention2(input_dims=[2,2,2], hidden_dim=1)
-        self.branch1=ConvNet(activation=Snake())
+        self.branch1=ConvNet(activation=nn.ReLU())
         self.branch2=ConvNet(activation=nn.Tanh())
         self.linear1=FullyConnectedLayer(160,80, activation=nn.Tanh())
-        self.linear2=FullyConnectedLayer(160,80,activation=nn.Tanh())
+        self.linear2=FullyConnectedLayer(160,80,activation=Snake())
 
         self.trunk=Vannila_FullyConnectedNet(dim=3)
         # self.bias =fc( 3*80, 1, n_layers, False)
