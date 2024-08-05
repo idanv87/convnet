@@ -1,6 +1,7 @@
 import os
 from typing import Any
 
+import math
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
@@ -22,7 +23,7 @@ class Constants:
     # path='/content/drive/MyDrive/clones'
 
     path = '/Users/idanversano/Documents/project_geo_deeponet/deep_attention/'
-    path='/home/elturkel/HINTS/convnet/'
+    # path='/home/elturkel/HINTS/convnet/'
     eps_fig_path=path+'eps_figures/'
     outputs_path=path+'outputs/'
 
@@ -33,7 +34,7 @@ class Constants:
     f_test_path= path+'test_set/'
 
 
-    k=21
+    k=7*math.pi
     l=1J*np.sqrt(k)
     h = 1/30
     batch_size=64

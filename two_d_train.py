@@ -227,9 +227,9 @@ if __name__=="__main__":
     end = time.time()
     print(f"Training time: {(end-start)/60:.3f} minutes")
 
-    try:
-        wandb.finish()
+    # try:
+    #     wandb.finish()
 
-    except:
-        pass    
+    # except:
+    #     pass    
 

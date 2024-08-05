@@ -16,7 +16,8 @@ from test_deeponet import domain
 from utils import count_trainable_params, extract_path_from_dir, save_uniqe, grf, bilinear_upsample,upsample, generate_random_matrix, plot_cloud, generate_grf, wn_PnPoly, sgnd_distance,plot_matrix
 from constants import Constants
 from df_polygon import make_domain
-                                                                      
+import shapely.plotting
+from shapely.geometry import Polygon                                                        
 # names=[(0,15,0,15),(0,8,0,8),(9,15,0,8),(0,8,9,15),(0,8,0,15),(0,15,0,8)]
 names=[np.array([[0,0],[1,0],[1,1],[0,1],[0,0]]),
        np.array([[0,0],[0.5,0],[0.5,0.5],[0,0.5],[0,0]]),
@@ -30,6 +31,7 @@ names=[np.array([[0,0],[1,0],[1,1],[0,1],[0,0]]),
        ]
 
 test_names=[np.array([[0,0],[1,0],[1,0.5],[0.5,0.5],[0.5,1],[0,1],[0,0]])]
+
 # names=[]
 # for k in range(1,4):
 #     for l in range(1,4):
@@ -67,6 +69,8 @@ def generate_data(names,  save_path, number_samples,Seed):
         d_ref=domain(np.linspace(0,1,Constants.n),np.linspace(0,1,Constants.n))
        
         A, dom,mask, X,Y, X_ref, Y_ref, valid_indices=make_domain(Constants.n,poly) 
+        # plt.scatter(X,Y)
+        # plt.show()
         MASKS.append(mask)
         # DOMAINS.append(torch.tensor(np.hstack((d_ref.X.reshape(-1, 1), d_ref.Y.reshape(-1, 1))), dtype=torch.float32))
 
@@ -83,10 +87,11 @@ def generate_data(names,  save_path, number_samples,Seed):
             f=np.zeros(d_ref.nx*d_ref.ny)
             f[valid_indices]=GRF[i][valid_indices]
             f_temp.append(torch.tensor(f, dtype=torch.float32))
+            # g=np.cos(math.pi*7*np.array(X))*np.sin(math.pi*7*np.array(Y))
             u=scipy.sparse.linalg.spsolve(A, f[valid_indices])
             for j in range(len(X)):
                 X1=[
-                    torch.tensor([X[j],Y[j]], dtype=torch.float32),
+                    torch.tensor([X[j],Y[j], sgnd_distance((X[j],Y[j]),poly_out)], dtype=torch.float32),
                     i,
                     l
                     ]
@@ -104,7 +109,7 @@ def generate_data(names,  save_path, number_samples,Seed):
 if __name__=='__main__':
     pass
 # if False: 400 is good for n=20
-    generate_data(names, Constants.train_path, number_samples=300, Seed=1)
+    generate_data(names, Constants.train_path, number_samples=10, Seed=1)
     generate_data(test_names,Constants.test_path,number_samples=1, Seed=800)
 
 else:

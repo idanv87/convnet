@@ -21,7 +21,8 @@ class Snake(nn.Module):
         self.a = a
 
     def forward(self, x):
-        return x + (1.0 / self.a) * torch.sin(self.a * x) ** 2
+        return torch.sin(x)
+        # return x + (1.0 / self.a) * torch.sin(self.a * x) ** 2
 
 class FullyConnectedLayer(nn.Module):
     def __init__(self, input_size, output_size):
@@ -99,7 +100,7 @@ class ConvNet(nn.Module):
         x = x.view(x.size(0), -1)
         
         # Pass through fully connected layers with ReLU activation
-        x = nn.ReLU()(self.fc1(x))
+        x = activation(self.fc1(x))
         x = self.fc2(x)
         
         return x
@@ -114,8 +115,10 @@ class Vannila_FullyConnectedNet(nn.Module):
 
     def forward(self, x):
         # Pass through fully connected layers with Tanh activation
-        x = torch.tanh(self.fc1(x))
-        x = torch.tanh(self.fc2(x))
+        activation=Snake()
+        # tanh()
+        x = activation(self.fc1(x))
+        x = activation(self.fc2(x))
         x = self.fc3(x)
         
         return x
@@ -291,8 +294,8 @@ class conv_deeponet_f(nn.Module):
         self.branch2=ConvNet()
         # self.linear=FullyConnectedLayer(225,80)
 
-        self.trunk=Vannila_FullyConnectedNet()
-        self.bias =fc( 3*80, 1, n_layers, False)
+        self.trunk=Vannila_FullyConnectedNet(dim=3)
+        # self.bias =fc( 3*80, 1, n_layers, False)
        
     def forward(self, X):
         y,f,dom, mask=X
@@ -307,10 +310,10 @@ class conv_deeponet_f(nn.Module):
         
         # trunk = self.attention2(y.unsqueeze(-1),dom,y.unsqueeze(-1)).squeeze(-1)
         trunk=self.trunk(y)
-        bias = torch.squeeze(self.bias(torch.cat((branch1, branch2,trunk),dim=1)))
+        # bias = torch.squeeze(self.bias(torch.cat((branch1, branch2,trunk),dim=1)))
         # print(time.time()-start)
         # return torch.sum(branch1*branch2*trunk, dim=-1, keepdim=False)+bias
-        return torch.sum(branch1*branch2*trunk, dim=-1, keepdim=False)+bias
+        return torch.sum(branch1*branch2*trunk, dim=-1, keepdim=False)
 
 class conv_deeponet(nn.Module):  
         def __init__(self, dim,f_shape, domain_shape,  p):
