@@ -22,6 +22,7 @@ class Constants:
     # path='/content/drive/MyDrive/clones'
 
     path = '/Users/idanversano/Documents/project_geo_deeponet/deep_attention/'
+    path='/home/elturkel/HINTS/convnet/'
     eps_fig_path=path+'eps_figures/'
     outputs_path=path+'outputs/'
 
