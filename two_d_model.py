@@ -25,18 +25,16 @@ class Snake(nn.Module):
         # return x + (1.0 / self.a) * torch.sin(self.a * x) ** 2
 
 class FullyConnectedLayer(nn.Module):
-    def __init__(self, input_size, output_size):
+    def __init__(self, input_size, output_size, activation=nn.Tanh()):
         super(FullyConnectedLayer, self).__init__()
         self.fc1 = nn.Linear(input_size, 200)
         self.fc2 = nn.Linear(200, 100)
-        self.fc3 = nn.Linear(100, 80)
-        self.fc4 = nn.Linear(80, output_size)  # Assuming you want an output of size 60
-
+        self.fc3 = nn.Linear(100, output_size)
+        self.activation=activation
     def forward(self, x):
-        x = self.fc1(x)
-        x = torch.nn.Tanh()(self.fc2(x))
-        x=torch.nn.Tanh()(self.fc3(x))
-        x=self.fc4(x)
+        x = self.activation(self.fc1(x))
+        x = self.activation(self.fc2(x))
+        x=self.fc3(x)
         return x
 
 
@@ -74,14 +72,13 @@ class fc(torch.nn.Module):
             return s
 
 class ConvNet(nn.Module):
-    def __init__(self):
+    def __init__(self, activation=nn.ReLU()):
         super(ConvNet, self).__init__()
         # Convolutional layers
         self.layer1 = nn.Conv2d(in_channels=1, out_channels=40, kernel_size=3, stride=2)
         self.layer2 = nn.Conv2d(in_channels=40, out_channels=60, kernel_size=3, stride=2)
         self.layer3 = nn.Conv2d(in_channels=60, out_channels=100, kernel_size=3, stride=2)
-        self.layer4 = nn.Conv2d(in_channels=100, out_channels=180, kernel_size=2, stride=2)
-
+        self.activation=activation
         
         # Fully connected layers
         self.fc1 = nn.Linear(100, 80)
@@ -89,18 +86,18 @@ class ConvNet(nn.Module):
 
     def forward(self, x):
         # Pass through convolutional layers with ReLU activation
-        activation=Snake()
+     
         # nn.ReLU()
-        x = activation(self.layer1(x))
-        x = activation(self.layer2(x))
-        x = activation(self.layer3(x))
-        # x = nn.ReLU()(self.layer4(x))
+        x = torch.nn.ReLU()(self.layer1(x))
+        x = torch.nn.ReLU()(self.layer2(x))
+        x = torch.nn.ReLU()(self.layer3(x))
+        
         
         # Flatten the output from convolutional layers
         x = x.view(x.size(0), -1)
         
         # Pass through fully connected layers with ReLU activation
-        x = activation(self.fc1(x))
+        x = self.activation(self.fc1(x))
         x = self.fc2(x)
         
         return x
@@ -290,9 +287,10 @@ class conv_deeponet_f(nn.Module):
         n_layers = 4
         self.n = p
         # self.attention=SelfAttention2(input_dims=[2,2,2], hidden_dim=1)
-        self.branch1=ConvNet()
-        self.branch2=ConvNet()
-        # self.linear=FullyConnectedLayer(225,80)
+        self.branch1=ConvNet(activation=Snake())
+        self.branch2=ConvNet(activation=nn.Tanh())
+        self.linear1=FullyConnectedLayer(160,80, activation=nn.Tanh())
+        self.linear2=FullyConnectedLayer(160,80,activation=nn.Tanh())
 
         self.trunk=Vannila_FullyConnectedNet(dim=3)
         # self.bias =fc( 3*80, 1, n_layers, False)
@@ -302,18 +300,19 @@ class conv_deeponet_f(nn.Module):
         f=f.view(-1,1, 15,15)
         dom=dom.unsqueeze(1)
         
-        
-
-
-        branch1= self.branch1(f)
         branch2= self.branch2(dom)
+        branch1= self.branch1(f)
+        trunk1=self.trunk(y)
+        branch=self.linear1(torch.cat((branch1, branch2),dim=1))
+        trunk=self.linear2(torch.cat((trunk1, branch2),dim=1))
+        
         
         # trunk = self.attention2(y.unsqueeze(-1),dom,y.unsqueeze(-1)).squeeze(-1)
-        trunk=self.trunk(y)
+        
         # bias = torch.squeeze(self.bias(torch.cat((branch1, branch2,trunk),dim=1)))
         # print(time.time()-start)
         # return torch.sum(branch1*branch2*trunk, dim=-1, keepdim=False)+bias
-        return torch.sum(branch1*branch2*trunk, dim=-1, keepdim=False)
+        return torch.sum(branch*trunk, dim=-1, keepdim=False)
 
 class conv_deeponet(nn.Module):  
         def __init__(self, dim,f_shape, domain_shape,  p):
