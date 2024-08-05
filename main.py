@@ -18,8 +18,18 @@ from constants import Constants
 from df_polygon import make_domain
                                                                       
 # names=[(0,15,0,15),(0,8,0,8),(9,15,0,8),(0,8,9,15),(0,8,0,15),(0,15,0,8)]
-names=[(0,15,0,15)]
-test_names=[(0,15,0,15)]
+names=[np.array([[0,0],[1,0],[1,1],[0,1],[0,0]]),
+       np.array([[0,0],[0.5,0],[0.5,0.5],[0,0.5],[0,0]]),
+       np.array([[0,0],[1,0],[1,0.5],[0,0.5],[0,0]]),
+       np.array([[0,0],[0.5,0],[0.5,1],[0,1],[0,0]]),
+       np.array([[0.5,0],[1,0],[1,0.5],[0.5,0.5],[0.5,0]]),
+       np.array([[0.5,0],[1,0],[1,1],[0.5,1],[0.5,0]]),
+       np.array([[0,0.5],[0.5,0.5],[0.5,1],[0,1],[0,0.5]]),
+       np.array([[0,0.5],[1,0.5],[1,1],[0,1],[0,0.5]]),
+       np.array([[0.5,0.5],[1,0.5],[1,1],[0.5,1],[0.5,0.5]])
+       ]
+# names=[(0,15,0,15)]
+test_names=[names[0]]
 # names=[]
 # for k in range(1,4):
 #     for l in range(1,4):
@@ -53,17 +63,14 @@ def generate_data(names,  save_path, number_samples,Seed):
     MASKS=[]
     F=[]
     DOMAINS=[]
-    for l,dom in enumerate(names):
+    for l,poly in enumerate(names):
         d_ref=domain(np.linspace(0,1,Constants.n),np.linspace(0,1,Constants.n))
-        f_ref=np.zeros(d_ref.nx*d_ref.ny)
-        d=generate_domains(dom[0],dom[1], dom[2],dom[3])
-        mask = np.zeros((len(f_ref),len(f_ref)))
-        mask[:, d.non_valid_indices] = float('-inf')  
-        
-        MASKS.append(torch.tensor(mask, dtype=torch.float32))
+       
+        A, dom,mask, X,Y, X_ref, Y_ref, valid_indices=make_domain(Constants.n,poly) 
+        MASKS.append(mask)
         # DOMAINS.append(torch.tensor(np.hstack((d_ref.X.reshape(-1, 1), d_ref.Y.reshape(-1, 1))), dtype=torch.float32))
 
-        poly_out=np.array([[0,0],[1,0],[1,1],[0,1],[0,0]])
+        poly_out=poly
         sgnd= np.zeros((Constants.n,Constants.n))
         for i in range(Constants.n):
             for j in range(Constants.n):
@@ -72,34 +79,20 @@ def generate_data(names,  save_path, number_samples,Seed):
         DOMAINS.append(torch.tensor(sgnd, dtype=torch.float32))
 
         GRF=generate_grf(d_ref.X, d_ref.Y, n_samples=number_samples,l=0.1, seed=Seed)
-        # GRF=generate_grf(d.X, d.Y, n_samples=number_samples, seed=Seed)
         for i in range(number_samples):
-            # f=GRF[i]
-            f=GRF[i][d.valid_indices]
-            
-            # try:
-            #     f=generate_f_g(d.nx*d.ny, Seed)
-            # except:
-            #     f=generate_f_g(d.nx*d.ny, i)
-            # f_ref[d.valid_indices]=f
-            f_ref[d.valid_indices]=f
-            f_temp.append(torch.tensor(f_ref, dtype=torch.float32))
-            
-            A,G=d.solver(f.reshape((d.nx,d.ny)))
-            
-            # A,G=d.solver(0*upsample(f[0],int(n/2)).reshape((n,n)),[ga,gb,gc,gd])
-            u=scipy.sparse.linalg.spsolve(A, f)
-            for j in range(len(d.X)):
+            f=np.zeros(d_ref.nx*d_ref.ny)
+            f[valid_indices]=GRF[i][valid_indices]
+            f_temp.append(torch.tensor(f, dtype=torch.float32))
+            u=scipy.sparse.linalg.spsolve(A, f[valid_indices])
+            for j in range(len(X)):
                 X1=[
-                    torch.tensor([d.X[j],d.Y[j]], dtype=torch.float32),
+                    torch.tensor([X[j],Y[j]], dtype=torch.float32),
                     i,
                     l
                     ]
                 Y1=torch.tensor(u[j], dtype=torch.cfloat)
                 save_uniqe([X1,Y1],save_path+'data/')
-                X.append(X1)
-                Y.append(Y1)
-                
+
         F.append(f_temp)   
     save_uniqe(MASKS ,save_path+'masks/')
     save_uniqe(DOMAINS ,save_path+'domains/')

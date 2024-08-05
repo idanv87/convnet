@@ -621,7 +621,14 @@ def make_domain(N,poly):
     mask = np.zeros((len(f_ref),len(f_ref)))
     mask[:, non_valid_indices] = float('-inf')  
     mask=torch.tensor(mask, dtype=torch.float32)
-    dom=torch.tensor(np.hstack((d_ref.X.reshape(-1, 1), d_ref.Y.reshape(-1, 1))), dtype=torch.float32) 
+    
+    # dom=torch.tensor(np.hstack((d_ref.X.reshape(-1, 1), d_ref.Y.reshape(-1, 1))), dtype=torch.float32) 
+    poly_out=poly
+    sgnd= np.zeros((Constants.n,Constants.n))
+    for i in range(Constants.n):
+        for j in range(Constants.n):
+            sgnd[i,j]=sgnd_distance((d_ref.x[i],d_ref.y[j]),poly_out)
+    dom=torch.tensor(sgnd, dtype=torch.float32)
     # k=0
     # for i in range(len(X)):
     #     plt.scatter(X[i],Y[i])
@@ -743,13 +750,15 @@ def make_obstacle(N,poly):
     mask = np.zeros((len(f_ref),len(f_ref)))
     mask[:, non_valid_indices] = float('-inf')  
     mask=torch.tensor(mask, dtype=torch.float32)
-    dom=torch.tensor(np.hstack((d_ref.X.reshape(-1, 1), d_ref.Y.reshape(-1, 1))), dtype=torch.float32) 
-    # k=0
-    # for i in range(len(X)):
-    #     plt.scatter(X[i],Y[i])
-    #     plt.text(X[i],Y[i],str(k))
-    #     k+=1
-    # plt.show()          
+    poly_out=np.array([[0,0],[1,0],[1,1],[0,1],[0,0]])
+    poly_in=poly
+    sgnd= np.zeros((Constants.n,Constants.n))
+    for i in range(Constants.n):
+        for j in range(Constants.n):
+            sgnd[i,j]=sgnd_distance((d_ref.x[i],d_ref.y[j]),poly_out,poly_in)
+    dom=torch.tensor(sgnd, dtype=torch.float32)
+    # dom=torch.tensor(np.hstack((d_ref.X.reshape(-1, 1), d_ref.Y.reshape(-1, 1))), dtype=torch.float32) 
+             
     return csr_matrix(D), dom,mask, X,Y, X_ref, Y_ref, valid_indices
 
 

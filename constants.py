@@ -14,7 +14,7 @@ from scipy.interpolate import Rbf
 class Constants:
     device=torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
-    # device = torch.device('cpu')
+
     dtype = torch.float32
     current_path=os.path.abspath(__file__)
 

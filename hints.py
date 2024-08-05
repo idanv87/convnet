@@ -21,7 +21,7 @@ from memory_profiler import memory_usage, profile
 import sys
 
 
-from utils import upsample, fft, solve_gmres, track, find_sub_indices, GS_method, generate_polygon_vertices
+from utils import upsample, fft, solve_gmres, track, find_sub_indices, GS_method, generate_polygon_vertices, plot_matrix
 from constants import Constants
 from utils import  grf, evaluate_model, generate_grf, np_wn
 
@@ -40,7 +40,7 @@ from df_polygon import generate_example, generate_rect, generate_rect2, generate
 # 2024.06.07.09.57.24best_model.pth single domain 
 # 2024.07.22.11.54.19best_model.pth 6 domains
 # 2024.08.03.18.45.57best_model.pth vanilla
-# 2024.08.04.17.30.07best_model.pth conv_deeponet
+# 2024.08.05.10.41.58best_model.pth conv_deeponet
 
 # 2024.06.05.12.50.00best_model.pth small domain  
 # 2024.05.16.19.26.50best_model.pth with dom
@@ -58,9 +58,9 @@ class TimeCounter:
         self.num_gmres = 0
 
 model=conv_deeponet(dim=2,f_shape=Constants.n**2, domain_shape=2, p=80) 
-best_model=torch.load(Constants.path+'runs/'+'2024.08.04.17.30.07best_model.pth')
-# model=vannila_deeponet(dim=2,f_shape=225, domain_shape=2, p=80)
-# best_model=torch.load(Constants.path+'runs/'+'2024.08.03.18.45.57best_model.pth')
+best_model=torch.load(Constants.path+'runs/'+'2024.08.05.04.12.52best_model.pth', map_location=torch.device('cpu'))
+model=vannila_deeponet(dim=2,f_shape=225, domain_shape=2, p=80)
+best_model=torch.load(Constants.path+'runs/'+'2024.08.03.18.45.57best_model.pth')
 
 
 
@@ -77,7 +77,6 @@ def conv_NN(int_points,F,dom,mask,model):
     
     y=torch.tensor(int_points,dtype=torch.float32).reshape(int_points.shape)
     f=torch.tensor(F,dtype=torch.float32)
-    dom=torch.tensor(dom,dtype=torch.float32)
     f=f.repeat(y.shape[0],1)
     dom=dom.repeat(y.shape[0],1,1)
     with torch.no_grad():
@@ -95,8 +94,6 @@ def vanilla_NN(int_points,F,model):
 
 def NN( F, t1,t2,mask, model,v1,v2):
     f=torch.tensor(F.reshape(1,F.shape[0]),dtype=torch.float32).unsqueeze(-1)
-
-         
 
     with torch.no_grad():
         
@@ -161,8 +158,8 @@ def hints(A,b,x0, J, alpha,X,Y,X_ref,Y_ref,dom,mask, valid_indices, model, good_
             
             # start1=time.time()
             # corr_real=(NN(f_ref_real,t1,t2, mask, model,v1,v2))*s_real
-            corr_real=(conv_NN(int_points,f_ref_real,dom,mask, model))*s_real
-            # corr_real=(vanilla_NN(int_points,f_ref_real, model))*s_real
+            # corr_real=(conv_NN(int_points,f_ref_real,dom,mask, model))*s_real
+            corr_real=(vanilla_NN(int_points,f_ref_real, model))*s_real
             
             
             iter_counter.num_NN_iterations+=1
@@ -170,8 +167,8 @@ def hints(A,b,x0, J, alpha,X,Y,X_ref,Y_ref,dom,mask, valid_indices, model, good_
             
 
             # corr_imag=(NN(f_ref_imag,t1,t2, mask, model,v1,v2))*s_imag
-            corr_imag=(conv_NN(int_points,f_ref_imag,dom,mask, model))*s_imag
-            # corr_imag=(vanilla_NN(int_points,f_ref_imag, model))*s_imag
+            # corr_imag=(conv_NN(int_points,f_ref_imag,dom,mask, model))*s_imag
+            corr_imag=(vanilla_NN(int_points,f_ref_imag, model))*s_imag
             iter_counter.num_NN_iterations+=1
             corr=corr_real+1J*corr_imag
             x0=x0+corr
@@ -219,7 +216,7 @@ def exp3b(model, sigma=0.1,l=0.2,mean=0):
     # A, dom,mask, X,Y, X_ref, Y_ref, valid_indices=make_domain(29,poly)
     # poly=generate_polygon_vertices(40)
     
-    poly=np.array([[3/14,3/14],[7/14,3/14],[7/14,7/14],[3/14,7/14],[3/14,3/14]])
+    poly=np.array([[3/14,3/14],[8/14,3/14],[8/14,8/14],[3/14,8/14],[3/14,3/14]])
     # A, dom,mask, X,Y, X_ref, Y_ref, valid_indices=make_domain(15,poly)
     A, dom,mask, X,Y, X_ref, Y_ref, valid_indices=make_obstacle(29,poly)
     # A,dom,mask, X, Y,X_ref,Y_ref, valid_indices=generate_example3(N=29)
@@ -255,7 +252,7 @@ def exp3b(model, sigma=0.1,l=0.2,mean=0):
         print(iters)
         print(err)
         
-        err, color, J, alpha, iters, iter_counter, time_counter=hints(A,b,x0,J=10, alpha=0.3,X=X,Y=Y,X_ref=X_ref,Y_ref=Y_ref,dom=dom,mask=mask, valid_indices=valid_indices, model=model, good_indices=good_indices)  
+        err, color, J, alpha, iters, iter_counter, time_counter=hints(A,b,x0,J=30, alpha=0.3,X=X,Y=Y,X_ref=X_ref,Y_ref=Y_ref,dom=dom,mask=mask, valid_indices=valid_indices, model=model, good_indices=good_indices)  
         all_iter.append(iters)
         all_time.append(time_counter)
 

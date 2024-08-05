@@ -999,7 +999,7 @@ def distance(a,b,p):
 def sgnd_distance(P,V_out,V_in=None):
         value_out=wn_PnPoly(P,V_out)
         dist_out=np.min([distance(V_out[i],V_out[i+1],P) for i in range(len(V_out)-1)])
-        if V_in==None:
+        if V_in is None:
             if value_out==0:
                 return -dist_out
             else:
@@ -1007,7 +1007,7 @@ def sgnd_distance(P,V_out,V_in=None):
         else:
             value_in=wn_PnPoly(P,V_in)
             dist_in=np.min([distance(V_in[i],V_in[i+1],P) for i in range(len(V_in)-1)])
-            dist=np.min(dist_in, dist_out)
+            dist=np.min([dist_in, dist_out])
             if value_out==1 and value_in==0:
                 return dist
             else:
