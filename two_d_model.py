@@ -1,5 +1,6 @@
 import time
 
+
 import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
@@ -14,6 +15,13 @@ from constants import Constants
 from utils import SelfAttention, SelfAttention2, track
 from transformer import EncoderLayer, EncoderLayer2
 
+class Snake(nn.Module):
+    def __init__(self, a=1.0):
+        super(Snake, self).__init__()
+        self.a = a
+
+    def forward(self, x):
+        return x + (1.0 / self.a) * torch.sin(self.a * x) ** 2
 
 class FullyConnectedLayer(nn.Module):
     def __init__(self, input_size, output_size):
@@ -80,9 +88,11 @@ class ConvNet(nn.Module):
 
     def forward(self, x):
         # Pass through convolutional layers with ReLU activation
-        x = nn.ReLU()(self.layer1(x))
-        x = nn.ReLU()(self.layer2(x))
-        x = nn.ReLU()(self.layer3(x))
+        activation=Snake()
+        # nn.ReLU()
+        x = activation(self.layer1(x))
+        x = activation(self.layer2(x))
+        x = activation(self.layer3(x))
         # x = nn.ReLU()(self.layer4(x))
         
         # Flatten the output from convolutional layers
