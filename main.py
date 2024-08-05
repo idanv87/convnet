@@ -109,7 +109,7 @@ def generate_data(names,  save_path, number_samples,Seed):
 if __name__=='__main__':
     pass
 # if False: 400 is good for n=20
-    generate_data(names, Constants.train_path, number_samples=10, Seed=1)
+    generate_data(names, Constants.train_path, number_samples=300, Seed=1)
     generate_data(test_names,Constants.test_path,number_samples=1, Seed=800)
 
 else:
