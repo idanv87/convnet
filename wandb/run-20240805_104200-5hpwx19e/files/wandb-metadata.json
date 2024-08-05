@@ -1,0 +1,49 @@
+{
+    "os": "macOS-14.5-arm64-arm-64bit",
+    "python": "3.8.18",
+    "heartbeatAt": "2024-08-05T07:42:02.106111",
+    "startedAt": "2024-08-05T07:42:00.955444",
+    "docker": null,
+    "cuda": null,
+    "args": [],
+    "state": "running",
+    "program": "/Users/idanversano/Documents/project_geo_deeponet/deep_attention/src/two_d_train.py",
+    "codePathLocal": "two_d_train.py",
+    "codePath": "two_d_train.py",
+    "git": {
+        "remote": "https://github.com/idanv87/paper2.git",
+        "commit": "e348148a69b6038ff1f5e5f797139d594dd708aa"
+    },
+    "email": "idanv@campus.technion.ac.il",
+    "root": "/Users/idanversano/Documents/project_geo_deeponet/deep_attention/src",
+    "host": "idans-MacBook-Air.local",
+    "username": "idanversano",
+    "executable": "/Users/idanversano/miniforge3/envs/torch_env/bin/python",
+    "cpu_count": 8,
+    "cpu_count_logical": 8,
+    "cpu_freq": {
+        "current": 3204,
+        "min": 600,
+        "max": 3204
+    },
+    "cpu_freq_per_core": [
+        {
+            "current": 3204,
+            "min": 600,
+            "max": 3204
+        }
+    ],
+    "disk": {
+        "/": {
+            "total": 228.27386474609375,
+            "used": 9.562911987304688
+        }
+    },
+    "gpuapple": {
+        "type": "arm",
+        "vendor": "Apple"
+    },
+    "memory": {
+        "total": 8.0
+    }
+}
