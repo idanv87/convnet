@@ -517,7 +517,7 @@ class SelfAttention(nn.Module):
         self.value = nn.Linear(input_dims[2], hidden_dim, bias=False)
         
         
-    def forward(self, x1,x2,x3, mask):
+    def forward(self, x1,x2,x3, mask=None):
         q = self.query(x1)
         k = self.key(x2)
         v = self.value(x3)
@@ -528,7 +528,20 @@ class SelfAttention(nn.Module):
         
         output = torch.matmul(attention_weights, v)
         return output
+# dom= torch.randn(2,225,1 )
+# l=SelfAttention([1,1,1],1)
+# print(l(dom,dom,dom).shape )
+def custom_softmax(x, dim):
+    # Compute the exponentials of the input tensor
+    exp_x = torch.exp(x)
     
+    # Sum the exponentials along the specified dimension
+    sum_exp_x = torch.sum(exp_x, dim=dim, keepdim=True)
+    
+    # Divide the exponentials by the sum of exponentials
+    softmax_x = exp_x / (sum_exp_x+1e-14)
+    
+    return softmax_x
 class SelfAttention2(nn.Module):
     def __init__(self, input_dims, hidden_dim):
         super(SelfAttention2, self).__init__()
@@ -546,7 +559,8 @@ class SelfAttention2(nn.Module):
 
         attention_scores = torch.matmul(q, k.transpose(-2, -1)) / torch.sqrt(torch.tensor(self.hidden_dim, dtype=torch.float32))
         
-        attention_weights = F.softmax(attention_scores+mask, dim=-1)
+        # attention_weights = F.softmax(attention_scores+mask, dim=-1)
+        attention_weights=custom_softmax(attention_scores+mask, dim=-1)
         
         output = torch.matmul(attention_weights, v)
         return output
@@ -555,7 +569,7 @@ class SelfAttention2(nn.Module):
 
 # dom= torch.randn(2, 225,2 )  # Batch size 4, sequence length 10, input dimension 64
 # dom=torch.randn(2, 225,2 )
-# attention1=SelfAttention2(input_dims=[2,2,2], hidden_dim=1)
+attention1=SelfAttention(input_dims=[2,2,2], hidden_dim=1)
 # print(attention1(dom,dom,dom,dom).shape)
 # attention2=SelfAttention2(input_dims=[2,2,2], hidden_dim=1)
 # attention1(dom,dom,dom)
@@ -1018,3 +1032,7 @@ def plot_matrix(A):
         for j in range(A.shape[1]):
             plt.scatter(i,j)
             plt.text(i,j,str(A[i,j]))
+            
+            
+            
+            

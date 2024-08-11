@@ -31,7 +31,7 @@ names=[np.array([[0,0],[1,0],[1,1],[0,1],[0,0]]),
        ]
 
 test_names=[np.array([[0,0],[1,0],[1,0.5],[0.5,0.5],[0.5,1],[0,1],[0,0]])]
-
+names=[names[0]]
 # names=[]
 # for k in range(1,4):
 #     for l in range(1,4):
@@ -99,7 +99,7 @@ def generate_data(names,  save_path, number_samples,Seed):
                 save_uniqe([X1,Y1],save_path+'data/')
 
         F.append(f_temp)   
-    save_uniqe(MASKS ,save_path+'masks/')
+    save_uniqe(MASKS ,save_path+'masks/')   
     save_uniqe(DOMAINS ,save_path+'domains/')
     save_uniqe(F ,save_path+'functions/')
     return 1      
@@ -109,7 +109,7 @@ def generate_data(names,  save_path, number_samples,Seed):
 if __name__=='__main__':
     pass
 # if False: 400 is good for n=20
-    generate_data(names, Constants.train_path, number_samples=300, Seed=1)
+    generate_data(names, Constants.train_path, number_samples=100, Seed=1)
     generate_data(test_names,Constants.test_path,number_samples=1, Seed=800)
 
 else:

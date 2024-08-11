@@ -20,6 +20,13 @@ def generate_f_g(shape, seedf):
         
        
         return f
+def mask_matrix(valid_indices):
+    mask = np.zeros((Constants.n**2,Constants.n**2))
+    for i in range(Constants.n**2):
+        for j in range(Constants.n**2):
+            if ((i in valid_indices) and (j in valid_indices))== False:
+                mask[i,j]=-1e20
+    return  mask
 
 def masking_coordinates(X,Y):
         xx,yy=np.meshgrid(np.linspace(0,1, Constants.n),np.linspace(0,1, Constants.n),indexing='ij')
@@ -109,8 +116,7 @@ def generate_example(sigma=0.1,l=0.2,mean=0):
     valid_indices, non_valid_indices=masking_coordinates(X, Y)     
     d_ref=domain(np.linspace(0,1,Constants.n),np.linspace(0,1,Constants.n))
     f_ref=np.zeros(d_ref.nx*d_ref.ny)
-    mask = np.zeros((len(f_ref),len(f_ref)))
-    mask[:, non_valid_indices] = float('-inf')  
+    mask=mask_matrix(valid_indices)
     mask=torch.tensor(mask, dtype=torch.float32)
     dom=torch.tensor(np.hstack((d_ref.X.reshape(-1, 1), d_ref.Y.reshape(-1, 1))), dtype=torch.float32)
     
@@ -128,8 +134,8 @@ def generate_rect(N):
     # domain with low resolution:
     d=generate_domains(0,8, 0,15)
     X_ref,Y_ref=d.X, d.Y
-    mask = np.zeros((Constants.n**2,Constants.n**2))
-    mask[:, d.non_valid_indices] = float('-inf') 
+    mask=mask_matrix(valid_indices)
+    mask=torch.tensor(mask, dtype=torch.float32)
     # domain with hugh resolution:
     # N=Constants.n*2-1
     new_domain=domain(np.linspace(d.x[0],d.x[-1],int((N+1)/2)),np.linspace(d.y[0],d.y[-1],N))
@@ -137,7 +143,7 @@ def generate_rect(N):
     A,G=new_domain.solver()
     #  d.valid_indices are the indices in the reference rectangle which stays inside the new low resolution domain
     
-    return A,dom,torch.tensor(mask, dtype=torch.float32), X, Y,X_ref,Y_ref, d.valid_indices
+    return A,dom,mask, X, Y,X_ref,Y_ref, d.valid_indices
 
 def generate_rect2(N):
     d_ref=domain(np.linspace(0,1,Constants.n),np.linspace(0,1,Constants.n))
@@ -263,8 +269,7 @@ def generate_example_2(N=29):
     valid_indices, non_valid_indices=masking_coordinates(X, Y)     
     d_ref=domain(np.linspace(0,1,Constants.n),np.linspace(0,1,Constants.n))
     f_ref=np.zeros(d_ref.nx*d_ref.ny)
-    mask = np.zeros((len(f_ref),len(f_ref)))
-    mask[:, non_valid_indices] = float('-inf')  
+    mask=mask_matrix(valid_indices)
     mask=torch.tensor(mask, dtype=torch.float32)
     dom=torch.tensor(np.hstack((d_ref.X.reshape(-1, 1), d_ref.Y.reshape(-1, 1))), dtype=torch.float32)
 
@@ -290,8 +295,7 @@ def generate_obstacle():
     D=lil_matrix(d_ref.D)[good_ind,:][:,good_ind]
     valid_indices, non_valid_indices=masking_coordinates(X_ref, Y_ref) 
     f_ref=np.zeros(d_ref.nx*d_ref.ny)
-    mask = np.zeros((len(f_ref),len(f_ref)))
-    mask[:, non_valid_indices] = float('-inf')  
+    mask=mask_matrix(valid_indices)
     mask=torch.tensor(mask, dtype=torch.float32)
     dom=torch.tensor(np.hstack((d_ref.X.reshape(-1, 1), d_ref.Y.reshape(-1, 1))), dtype=torch.float32)
     f=generate_f_g(len(X_ref), 1)
@@ -325,8 +329,7 @@ def generate_obstacle2(N):
     valid_indices, non_valid_indices=masking_coordinates(X, Y) 
     
     f_ref=np.zeros(d0.nx*d0.ny)
-    mask = np.zeros((len(f_ref),len(f_ref)))
-    mask[:, non_valid_indices] = float('-inf')  
+    mask=mask_matrix(valid_indices)
     mask=torch.tensor(mask, dtype=torch.float32)
     dom=torch.tensor(np.hstack((d0.X.reshape(-1, 1), d0.Y.reshape(-1, 1))), dtype=torch.float32)
     
@@ -506,8 +509,7 @@ def generate_example3(N):
     valid_indices, non_valid_indices=masking_coordinates(X, Y)     
     d_ref=domain(np.linspace(0,1,Constants.n),np.linspace(0,1,Constants.n))
     f_ref=np.zeros(d_ref.nx*d_ref.ny)
-    mask = np.zeros((len(f_ref),len(f_ref)))
-    mask[:, non_valid_indices] = float('-inf')  
+    mask=mask_matrix(valid_indices)
     mask=torch.tensor(mask, dtype=torch.float32)
     dom=torch.tensor(np.hstack((d_ref.X.reshape(-1, 1), d_ref.Y.reshape(-1, 1))), dtype=torch.float32)
 
@@ -618,17 +620,17 @@ def make_domain(N,poly):
     valid_indices, non_valid_indices=masking_coordinates(X, Y)     
     d_ref=domain(np.linspace(0,1,Constants.n),np.linspace(0,1,Constants.n))
     f_ref=np.zeros(d_ref.nx*d_ref.ny)
-    mask = np.zeros((len(f_ref),len(f_ref)))
-    mask[:, non_valid_indices] = float('-inf')  
+    mask=mask_matrix(valid_indices)
     mask=torch.tensor(mask, dtype=torch.float32)
     
-    # dom=torch.tensor(np.hstack((d_ref.X.reshape(-1, 1), d_ref.Y.reshape(-1, 1))), dtype=torch.float32) 
     poly_out=poly
     sgnd= np.zeros((Constants.n,Constants.n))
     for i in range(Constants.n):
         for j in range(Constants.n):
             sgnd[i,j]=sgnd_distance((d_ref.x[i],d_ref.y[j]),poly_out)
-    dom=torch.tensor(sgnd, dtype=torch.float32)
+    # dom=torch.tensor(sgnd, dtype=torch.float32)
+    dom=torch.tensor(np.hstack((d_ref.X.reshape(-1, 1), d_ref.Y.reshape(-1, 1))), dtype=torch.float32) 
+
     # k=0
     # for i in range(len(X)):
     #     plt.scatter(X[i],Y[i])
@@ -747,8 +749,7 @@ def make_obstacle(N,poly):
     valid_indices, non_valid_indices=masking_coordinates(X, Y)     
     d_ref=domain(np.linspace(0,1,Constants.n),np.linspace(0,1,Constants.n))
     f_ref=np.zeros(d_ref.nx*d_ref.ny)
-    mask = np.zeros((len(f_ref),len(f_ref)))
-    mask[:, non_valid_indices] = float('-inf')  
+    mask=mask_matrix(valid_indices)
     mask=torch.tensor(mask, dtype=torch.float32)
     poly_out=np.array([[0,0],[1,0],[1,1],[0,1],[0,0]])
     poly_in=poly
@@ -756,8 +757,8 @@ def make_obstacle(N,poly):
     for i in range(Constants.n):
         for j in range(Constants.n):
             sgnd[i,j]=sgnd_distance((d_ref.x[i],d_ref.y[j]),poly_out,poly_in)
-    dom=torch.tensor(sgnd, dtype=torch.float32)
-    # dom=torch.tensor(np.hstack((d_ref.X.reshape(-1, 1), d_ref.Y.reshape(-1, 1))), dtype=torch.float32) 
+    # dom=torch.tensor(sgnd, dtype=torch.float32)
+    dom=torch.tensor(np.hstack((d_ref.X.reshape(-1, 1), d_ref.Y.reshape(-1, 1))), dtype=torch.float32) 
              
     return csr_matrix(D), dom,mask, X,Y, X_ref, Y_ref, valid_indices
 

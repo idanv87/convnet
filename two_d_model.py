@@ -38,6 +38,21 @@ class FullyConnectedLayer(nn.Module):
         return x
 
 
+# class FullyConnectedLayer(nn.Module):
+#     def __init__(self, input_size, output_size):
+#         super(FullyConnectedLayer, self).__init__()
+#         self.fc1 = nn.Linear(input_size, 200)
+#         self.fc2 = nn.Linear(200, 100)
+#         self.fc3 = nn.Linear(100, 80)
+#         self.fc4 = nn.Linear(80, output_size)  # Assuming you want an output of size 60
+
+#     def forward(self, x):
+#         x = self.fc1(x)
+#         x = torch.nn.Tanh()(self.fc2(x))
+#         x=torch.nn.Tanh()(self.fc3(x))
+#         x=self.fc4(x)
+#         return x
+
 class fc(torch.nn.Module):
     def __init__(self, input_shape, output_shape, num_layers, activation_last):
         super().__init__()
@@ -78,6 +93,7 @@ class ConvNet(nn.Module):
         self.layer1 = nn.Conv2d(in_channels=1, out_channels=40, kernel_size=3, stride=2)
         self.layer2 = nn.Conv2d(in_channels=40, out_channels=60, kernel_size=3, stride=2)
         self.layer3 = nn.Conv2d(in_channels=60, out_channels=100, kernel_size=3, stride=2)
+        self.layer4 = nn.Conv2d(in_channels=100, out_channels=180, kernel_size=2, stride=2)
         self.activation=activation
         
         # Fully connected layers
@@ -101,7 +117,6 @@ class ConvNet(nn.Module):
         x = self.fc2(x)
         
         return x
-
 class Vannila_FullyConnectedNet(nn.Module):
     def __init__(self,dim=2):
         super(Vannila_FullyConnectedNet, self).__init__()
@@ -277,8 +292,7 @@ class vannila_deeponet(nn.Module):
         def forward(self, X):
    
             # return self.model1(X)
-            return self.model1(X)+1J*self.model2(X)
-        
+            return self.model1(X)+1J*self.model2(X)        
 
 class conv_deeponet_f(nn.Module):
     def __init__(self, dim,f_shape, domain_shape,  p):
@@ -286,34 +300,40 @@ class conv_deeponet_f(nn.Module):
 
         n_layers = 4
         self.n = p
-        # self.attention=SelfAttention2(input_dims=[2,2,2], hidden_dim=1)
-        self.branch1=ConvNet(activation=nn.ReLU())
-        self.branch2=ConvNet(activation=nn.Tanh())
+        self.attention1=SelfAttention2(input_dims=[1,1,1], hidden_dim=1)
+        # self.branch1=ConvNet(activation=nn.ReLU())
+        self.conv1=ConvNet(activation=nn.Tanh())
         self.linear1=FullyConnectedLayer(160,80, activation=nn.Tanh())
         self.linear2=FullyConnectedLayer(160,80,activation=Snake())
+        self.linear3=FullyConnectedLayer(225,80,activation=Snake())
 
         self.trunk=Vannila_FullyConnectedNet(dim=3)
         # self.bias =fc( 3*80, 1, n_layers, False)
        
     def forward(self, X):
         y,f,dom, mask=X
-        f=f.view(-1,1, 15,15)
-        dom=dom.unsqueeze(1)
-        
-        branch2= self.branch2(dom)
-        branch1= self.branch1(f)
+        # f=f.view(-1,1, 15,15)
+        dom=dom.view(-1,1, 15,15)
+        branch2= self.conv1(dom)
+        branch1= self.linear3(self.attention1(f.unsqueeze(-1),f.unsqueeze(-1),f.unsqueeze(-1), mask).squeeze(-1))
+        # branch1= self.branch1(f)
         trunk1=self.trunk(y)
         branch=self.linear1(torch.cat((branch1, branch2),dim=1))
         trunk=self.linear2(torch.cat((trunk1, branch2),dim=1))
-        
-        
-        # trunk = self.attention2(y.unsqueeze(-1),dom,y.unsqueeze(-1)).squeeze(-1)
-        
-        # bias = torch.squeeze(self.bias(torch.cat((branch1, branch2,trunk),dim=1)))
-        # print(time.time()-start)
-        # return torch.sum(branch1*branch2*trunk, dim=-1, keepdim=False)+bias
         return torch.sum(branch*trunk, dim=-1, keepdim=False)
 
+    def forward2(self, X):
+        y,f,dom, mask=X
+        f=f.view(-1,1, 15,15)
+        dom=dom.view(-1,1, 15,15)
+        
+        branch2= self.branch2(dom)
+        branch1= self.branch1(f)
+        branch=self.linear1(torch.cat((branch1, branch2),dim=1))
+        trunk1=self.trunk(y)
+        trunk=self.linear2(torch.cat((trunk1, branch2.repeat(y.shape[0],1)),dim=1))
+        return torch.sum(branch.repeat(y.shape[0],1)*trunk, dim=-1, keepdim=False)
+    
 class conv_deeponet(nn.Module):  
         def __init__(self, dim,f_shape, domain_shape,  p):
             super().__init__()
@@ -327,6 +347,10 @@ class conv_deeponet(nn.Module):
             # return self.model1(X)
             return self.model1(X)+1J*self.model2(X)
         
+        def forward2(self, X):
+   
+            # return self.model1(X)
+            return self.model1.forward2(X)+1J*self.model2.forward2(X)
 
 
 
