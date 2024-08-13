@@ -21,14 +21,16 @@ from memory_profiler import memory_usage, profile
 import sys
 
 
-from utils import upsample, fft, solve_gmres, track, find_sub_indices, GS_method, generate_polygon_vertices, plot_matrix
+from utils import upsample, fft, solve_gmres, track, find_sub_indices, GS_method, generate_polygon_vertices, plot_matrix, sgnd_distance
 from constants import Constants
-from utils import  grf, evaluate_model, generate_grf, np_wn, SelfAttention2
+from utils import  grf, evaluate_model, generate_grf, np_wn, SelfAttention2, generate_polygon_vertices
 
 from two_d_data_set import *
 from packages.my_packages import Gauss_zeidel, interpolation_2D, gs_new, Gauss_zeidel2
 
-from two_d_model import  deeponet, vannila_deeponet, deeponet2, conv_deeponet
+# from two_d_model import  deeponet
+from more_models_2 import deeponet 
+# 2024.08.13.16.35.33best_model.pth
 from test_deeponet import domain
 from main import generate_f_g
 # 2024.08.04.13.22.05best_model.pth deeponet2
@@ -58,7 +60,7 @@ class TimeCounter:
         self.num_gmres = 0
 
 model=deeponet(dim=2,f_shape=Constants.n**2, domain_shape=2, p=80) 
-best_model=torch.load(Constants.path+'runs/'+'2024.06.07.09.57.24best_model.pth', map_location=torch.device('cpu'))
+best_model=torch.load(Constants.path+'runs/'+'2024.08.13.16.35.33best_model.pth', map_location=torch.device('cpu'))
 # model=vannila_deeponet(dim=2,f_shape=225, domain_shape=2, p=80)
 # best_model=torch.load(Constants.path+'runs/'+'2024.08.03.18.45.57best_model.pth')
 
@@ -75,7 +77,7 @@ model.load_state_dict(best_model['model_state_dict'])
    
 def conv_NN(int_points,F,dom,mask,model):
     
-    y=torch.tensor(int_points,dtype=torch.float32).reshape(int_points.shape)
+    y=torch.tensor(int_points,dtype=torch.float32)
     f=torch.tensor(F,dtype=torch.float32)
     with torch.no_grad():
         pred2=model.forward2([y,f,dom,mask])
@@ -108,9 +110,11 @@ def NN( F, t1,t2,mask, model,v1,v2):
     return torch.real(pred2).numpy()+1J*torch.imag(pred2).numpy()
 
 
-def hints(A,b,x0, J, alpha,X,Y,X_ref,Y_ref,dom,mask, valid_indices, model, good_indices):
+def hints(A,b,x0, J, alpha,X,Y,X_ref,Y_ref,dom,mask, valid_indices, model, good_indices, poly):
     iter_counter=IterationCounter()
     int_points=np.vstack([X,Y]).T
+    sgnd=np.array([sgnd_distance((X[i],Y[i]),poly) for i in range(X.shape[0])])
+    int_points=np.vstack([int_points,sgnd]).T
     y1=torch.tensor(int_points,dtype=torch.float32).reshape(int_points.shape)
     try:
         v1=model.model1.branch2(model.model1.attention2(
@@ -155,8 +159,8 @@ def hints(A,b,x0, J, alpha,X,Y,X_ref,Y_ref,dom,mask, valid_indices, model, good_
             f_ref_imag[valid_indices]=(f_imag)/s_imag
             
             # start1=time.time()
-            corr_real=(NN(f_ref_real,t1,t2, mask, model,v1,v2))*s_real
-            # corr_real=(conv_NN(int_points,f_ref_real,dom,mask, model))*s_real
+            # corr_real=(NN(f_ref_real,t1,t2, mask, model,v1,v2))*s_real
+            corr_real=(conv_NN(int_points,f_ref_real,dom,mask, model))*s_real
             # corr_real=(vanilla_NN(int_points,f_ref_real, model))*s_real
             
             
@@ -164,8 +168,8 @@ def hints(A,b,x0, J, alpha,X,Y,X_ref,Y_ref,dom,mask, valid_indices, model, good_
             # print(time.time()-start1)
             
 
-            corr_imag=(NN(f_ref_imag,t1,t2, mask, model,v1,v2))*s_imag
-            # corr_imag=(conv_NN(int_points,f_ref_imag,dom,mask, model))*s_imag
+            # corr_imag=(NN(f_ref_imag,t1,t2, mask, model,v1,v2))*s_imag
+            corr_imag=(conv_NN(int_points,f_ref_imag,dom,mask, model))*s_imag
             # corr_imag=(vanilla_NN(int_points,f_ref_imag, model))*s_imag
             iter_counter.num_NN_iterations+=1
             corr=corr_real+1J*corr_imag
@@ -212,14 +216,15 @@ def exp3b(model, sigma=0.1,l=0.2,mean=0):
     # poly=np.array([[0,p1],[p1,p1],[p1,0],[p2,0],
     #                [p2,p1],[1,p1],[1,p2],[p2,p2],[p2,1],[p1,1],[p1,p2],
     #                [0,p2],[0,p1]])
-    poly=np.array([[0,0],[0.25,0],[0.25,1],[0,1],[0,0]])
-    A, dom,mask, X,Y, X_ref, Y_ref, valid_indices=make_domain(15,poly)
+    # poly=np.array([[0,0],[0.25,0],[0.25,1],[0,1],[0,0]])
+    # poly=generate_polygon_vertices(30)
+    # A, dom,mask, X,Y, X_ref, Y_ref, valid_indices=make_domain(57,poly)
     # poly=generate_polygon_vertices(40)
     
-    poly=np.array([[3/14,3/14],[7/14,3/14],[7/14,7/14],[3/14,7/14],[3/14,3/14]])
+    # poly=np.array([[3/14,3/14],[7/14,3/14],[7/14,7/14],[3/14,7/14],[3/14,3/14]])
     # A, dom,mask, X,Y, X_ref, Y_ref, valid_indices=make_domain(15,poly)
-    A, dom,mask, X,Y, X_ref, Y_ref, valid_indices=make_obstacle(29,poly)
-    # A,dom,mask, X, Y,X_ref,Y_ref, valid_indices=generate_example3(N=29)
+    # A, dom,mask, X,Y, X_ref, Y_ref, valid_indices=make_obstacle(29,poly)
+    # A,dom,mask, X, Y,X_ref,Y_ref, valid_indices=generate_example3(N=225)
     # plt.scatter(X,Y);plt.scatter(X_ref,Y_ref,color='red');plt.show()
     # A,dom,mask, X, Y,X_ref,Y_ref, valid_indices=generate_rect(15)
     # torch.save((A,dom,mask, X, Y,X_ref,Y_ref, valid_indices), Constants.outputs_path+'rect225.pt')
@@ -230,7 +235,8 @@ def exp3b(model, sigma=0.1,l=0.2,mean=0):
     # A,dom,mask, X, Y,X_ref,Y_ref, valid_indices=torch.load(Constants.outputs_path+'L225.pt')
     # print(A.shape)
     # A,dom,mask, X,Y,X_ref,Y_ref, valid_indices=generate_example()
-    # A,dom,mask, X,Y, X_ref, Y_ref, valid_indices=generate_obstacle2(225)
+    A,dom,mask, X,Y, X_ref, Y_ref, valid_indices=generate_obstacle2(57)
+    # plt.scatter(X,Y);plt.scatter(X_ref,Y_ref,color='red');plt.show()
     # torch.save((A,dom,mask, X, Y,X_ref,Y_ref, valid_indices), Constants.outputs_path+'obs225.pt') 
     # A,dom,mask, X, Y,X_ref,Y_ref, valid_indices=torch.load(Constants.outputs_path+'obs225.pt')
     # A,dom,mask, X, Y,X_ref,Y_ref, valid_indices=generate_rect(N=15)
@@ -244,17 +250,19 @@ def exp3b(model, sigma=0.1,l=0.2,mean=0):
     # g[valid_indices]=b[good_indices]
     # g=torch.tensor(g, dtype=torch.float32)
     # f_ref=torch.tensor(f_ref, dtype=torch.float32)
-    # l=SelfAttention2([1,1,1],1)
+    # # l=SelfAttention2([1,1,1],1)
     # l=SelfAttention2([2,2,2],1)
-    # y=l(dom1.unsqueeze(0),dom1.unsqueeze(0),dom1.unsqueeze(0), mask1.unsqueeze(0))-l(dom.unsqueeze(0), dom.unsqueeze(0), dom.unsqueeze(0), mask.unsqueeze(0))
+    # x1=torch.stack((f_ref,dom.flatten()),dim=-1)
+    # x=torch.stack((g,dom.flatten()),dim=-1)
+    # y=l(x1.unsqueeze(0),x1.unsqueeze(0),x1.unsqueeze(0), mask.unsqueeze(0))-l(x.unsqueeze(0), x.unsqueeze(0), x.unsqueeze(0), mask.unsqueeze(0))
 
-    # x=l(f_ref.view(1,-1,1), f_ref.view(1,-1,1), f_ref.view(1,-1,1), mask.unsqueeze(0))-l(g.view(1,-1,1), g.view(1,-1,1), g.view(1,-1,1), mask.unsqueeze(0))
     all_iter=[]
     all_time=[]
     for i in range(1):
-        b=np.random.normal(1,1,A.shape[0])
+        b=np.random.normal(0,1,A.shape[0])
         u=scipy.sparse.linalg.spsolve(A, b)
         f_ref[valid_indices]=b[good_indices]
+        
         x0=(b+1J*b)*0.001
         
         x,err,iters,time_counter=solve_gmres(A,b,x0)
@@ -262,7 +270,7 @@ def exp3b(model, sigma=0.1,l=0.2,mean=0):
         print(iters)
         print(err)
         
-        err, color, J, alpha, iters, iter_counter, time_counter=hints(A,b,x0,J=30, alpha=0.3,X=X,Y=Y,X_ref=X_ref,Y_ref=Y_ref,dom=dom,mask=mask, valid_indices=valid_indices, model=model, good_indices=good_indices)  
+        err, color, J, alpha, iters, iter_counter, time_counter=hints(A,b,x0,J=10, alpha=0.3,X=X,Y=Y,X_ref=X_ref,Y_ref=Y_ref,dom=dom,mask=mask, valid_indices=valid_indices, model=model, good_indices=good_indices, poly=poly)  
         all_iter.append(iters)
         all_time.append(time_counter)
 

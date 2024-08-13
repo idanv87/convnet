@@ -72,7 +72,6 @@ def generate_data(names,  save_path, number_samples,Seed):
         # plt.scatter(X,Y)
         # plt.show()
         MASKS.append(mask)
-        # DOMAINS.append(torch.tensor(np.hstack((d_ref.X.reshape(-1, 1), d_ref.Y.reshape(-1, 1))), dtype=torch.float32))
 
         poly_out=poly
         sgnd= np.zeros((Constants.n,Constants.n))
@@ -80,7 +79,9 @@ def generate_data(names,  save_path, number_samples,Seed):
             for j in range(Constants.n):
                 sgnd[i,j]=sgnd_distance((d_ref.x[i],d_ref.y[j]),poly_out)
         f_temp=[]
-        DOMAINS.append(torch.tensor(sgnd, dtype=torch.float32))
+        # DOMAINS.append(torch.tensor(sgnd, dtype=torch.float32))
+        DOMAINS.append(torch.tensor(np.hstack((d_ref.X.reshape(-1, 1), d_ref.Y.reshape(-1, 1))), dtype=torch.float32))
+
 
         GRF=generate_grf(d_ref.X, d_ref.Y, n_samples=number_samples,l=0.1, seed=Seed)
         for i in range(number_samples):
@@ -92,6 +93,8 @@ def generate_data(names,  save_path, number_samples,Seed):
             for j in range(len(X)):
                 X1=[
                     torch.tensor([X[j],Y[j], sgnd_distance((X[j],Y[j]),poly_out)], dtype=torch.float32),
+                    # torch.tensor([X[j],Y[j]], dtype=torch.float32),
+
                     i,
                     l
                     ]
@@ -109,7 +112,7 @@ def generate_data(names,  save_path, number_samples,Seed):
 if __name__=='__main__':
     pass
 # if False: 400 is good for n=20
-    generate_data(names, Constants.train_path, number_samples=100, Seed=1)
+    generate_data(names, Constants.train_path, number_samples=300, Seed=1)
     generate_data(test_names,Constants.test_path,number_samples=1, Seed=800)
 
 else:

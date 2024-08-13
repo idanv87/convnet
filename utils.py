@@ -508,28 +508,38 @@ def bilinear_upsample(f):
 # Example usage:
 
 class SelfAttention(nn.Module):
-    def __init__(self, input_dims, hidden_dim):
+    def __init__(self, input_dims, hidden_dim, seed):
         super(SelfAttention, self).__init__()
         self.hidden_dim = hidden_dim
-        
+        torch.manual_seed(seed)
         self.query = nn.Linear(input_dims[0], hidden_dim, bias=False)
         self.key = nn.Linear(input_dims[1], hidden_dim, bias=False)
         self.value = nn.Linear(input_dims[2], hidden_dim, bias=False)
-        
+    
+
+       
         
     def forward(self, x1,x2,x3, mask=None):
         q = self.query(x1)
         k = self.key(x2)
         v = self.value(x3)
-
+        
         attention_scores = torch.matmul(q, k.transpose(-2, -1)) / torch.sqrt(torch.tensor(self.hidden_dim, dtype=torch.float32))
         
-        attention_weights = F.softmax(attention_scores+mask, dim=-1)
+        attention_weights = F.softmax(attention_scores, dim=-1)
         
         output = torch.matmul(attention_weights, v)
         return output
-# dom= torch.randn(2,225,1 )
-# l=SelfAttention([1,1,1],1)
+# x=torch.tensor(np.array([1,2]), dtype=torch.float32).unsqueeze(0).unsqueeze(-1)
+# y=torch.tensor(np.array([2,1]), dtype=torch.float32).unsqueeze(0).unsqueeze(-1)
+# d1=torch.tensor(np.array([-1,3]), dtype=torch.float32).unsqueeze(0).unsqueeze(-1)
+# d2=torch.tensor(np.array([3,-1]), dtype=torch.float32).unsqueeze(0).unsqueeze(-1)
+# y0=torch.tensor(np.array([3,-1,2]), dtype=torch.float32).unsqueeze(0).unsqueeze(-1)
+# l1=SelfAttention([1,1,1],1,seed=1) 
+# l2=SelfAttention([1,1,1],1,seed=2) 
+# print(l1(x,x,d1))
+# print(l1(y,y,d2))
+  
 # print(l(dom,dom,dom).shape )
 def custom_softmax(x, dim):
     # Compute the exponentials of the input tensor
@@ -543,24 +553,29 @@ def custom_softmax(x, dim):
     
     return softmax_x
 class SelfAttention2(nn.Module):
-    def __init__(self, input_dims, hidden_dim):
+    def __init__(self, input_dims, hidden_dim, include_weigts=False):
         super(SelfAttention2, self).__init__()
         self.hidden_dim = hidden_dim
         
         self.query = nn.Linear(input_dims[0], hidden_dim,bias=False)
         self.key = nn.Linear(input_dims[1], hidden_dim,bias=False)
         self.value = nn.Linear(input_dims[2], hidden_dim,bias=False)
+        self.include_weights=include_weigts
         
-        
-    def forward(self, x1,x2,x3, mask):
-        q = x1
-        k = x2
-        v = x3
+    def forward(self, x1,x2,x3, mask=None):
+        if self.include_weights:
+            q = self.query(x1)
+            k = self.key(x2)
+            v = self.value(x3)
+        else:
+            q=x1
+            k=x2
+            v=x3
 
         attention_scores = torch.matmul(q, k.transpose(-2, -1)) / torch.sqrt(torch.tensor(self.hidden_dim, dtype=torch.float32))
         
         # attention_weights = F.softmax(attention_scores+mask, dim=-1)
-        attention_weights=custom_softmax(attention_scores+mask, dim=-1)
+        attention_weights=custom_softmax(attention_scores, dim=-1)
         
         output = torch.matmul(attention_weights, v)
         return output
@@ -569,7 +584,7 @@ class SelfAttention2(nn.Module):
 
 # dom= torch.randn(2, 225,2 )  # Batch size 4, sequence length 10, input dimension 64
 # dom=torch.randn(2, 225,2 )
-attention1=SelfAttention(input_dims=[2,2,2], hidden_dim=1)
+# attention1=SelfAttention1(input_dims=[2,2,2], hidden_dim=1)
 # print(attention1(dom,dom,dom,dom).shape)
 # attention2=SelfAttention2(input_dims=[2,2,2], hidden_dim=1)
 # attention1(dom,dom,dom)
@@ -984,8 +999,9 @@ def generate_polygon_vertices(n):
         angle = i * angle_increment
         x = math.cos(angle)
         y = math.sin(angle)
-        vertices.append((3/14*x+0.5, 3/14*y+0.5))
+        vertices.append((4/14*x+0.5, 4/14*y+0.5))
     
+    vertices.append(vertices[0])
     return np.array(vertices)
 
 # V=generate_polygon_vertices(40)
@@ -1032,7 +1048,6 @@ def plot_matrix(A):
         for j in range(A.shape[1]):
             plt.scatter(i,j)
             plt.text(i,j,str(A[i,j]))
-            
             
             
             

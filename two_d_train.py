@@ -14,11 +14,12 @@ from utils import  extract_path_from_dir
 from constants import Constants
 from packages.schedualer import LRScheduler, SaveBestModel
 from utils import norms
-from two_d_model import deeponet, vannila_deeponet, conv_deeponet
-
+# from two_d_model import deeponet
+from more_models import conv_deeponet
+from more_models_2 import deeponet
 if __name__=="__main__":
     n=Constants.n
-    model=conv_deeponet(dim=2,f_shape=n**2, domain_shape=2, p=80) 
+    model=deeponet(dim=2,f_shape=n**2, domain_shape=2, p=80) 
     # model=vannila_deeponet(dim=2,f_shape=n**2, domain_shape=2, p=80)
     total_params = sum(p.numel() for p in model.parameters())
     print(f"{total_params:,} total parameters.")

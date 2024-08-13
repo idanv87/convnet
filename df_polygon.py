@@ -332,9 +332,6 @@ def generate_obstacle2(N):
     mask=mask_matrix(valid_indices)
     mask=torch.tensor(mask, dtype=torch.float32)
     dom=torch.tensor(np.hstack((d0.X.reshape(-1, 1), d0.Y.reshape(-1, 1))), dtype=torch.float32)
-    
-
-    
     X_ref=[]
     Y_ref=[]
     for i in range(len(d0.X)):
@@ -508,7 +505,7 @@ def generate_example3(N):
 
     valid_indices, non_valid_indices=masking_coordinates(X, Y)     
     d_ref=domain(np.linspace(0,1,Constants.n),np.linspace(0,1,Constants.n))
-    f_ref=np.zeros(d_ref.nx*d_ref.ny)
+
     mask=mask_matrix(valid_indices)
     mask=torch.tensor(mask, dtype=torch.float32)
     dom=torch.tensor(np.hstack((d_ref.X.reshape(-1, 1), d_ref.Y.reshape(-1, 1))), dtype=torch.float32)
@@ -624,11 +621,13 @@ def make_domain(N,poly):
     mask=torch.tensor(mask, dtype=torch.float32)
     
     poly_out=poly
-    sgnd= np.zeros((Constants.n,Constants.n))
-    for i in range(Constants.n):
-        for j in range(Constants.n):
-            sgnd[i,j]=sgnd_distance((d_ref.x[i],d_ref.y[j]),poly_out)
+    
+    # sgnd= np.zeros((Constants.n,Constants.n))
+    # for i in range(Constants.n):
+    #     for j in range(Constants.n):
+    #         sgnd[i,j]=sgnd_distance((d_ref.x[i],d_ref.y[j]),poly_out)
     # dom=torch.tensor(sgnd, dtype=torch.float32)
+    
     dom=torch.tensor(np.hstack((d_ref.X.reshape(-1, 1), d_ref.Y.reshape(-1, 1))), dtype=torch.float32) 
 
     # k=0
@@ -757,8 +756,8 @@ def make_obstacle(N,poly):
     for i in range(Constants.n):
         for j in range(Constants.n):
             sgnd[i,j]=sgnd_distance((d_ref.x[i],d_ref.y[j]),poly_out,poly_in)
-    # dom=torch.tensor(sgnd, dtype=torch.float32)
-    dom=torch.tensor(np.hstack((d_ref.X.reshape(-1, 1), d_ref.Y.reshape(-1, 1))), dtype=torch.float32) 
+    dom=torch.tensor(sgnd, dtype=torch.float32)
+    # dom=torch.tensor(np.hstack((d_ref.X.reshape(-1, 1), d_ref.Y.reshape(-1, 1))), dtype=torch.float32) 
              
     return csr_matrix(D), dom,mask, X,Y, X_ref, Y_ref, valid_indices
 
