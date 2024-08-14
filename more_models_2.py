@@ -82,12 +82,12 @@ class deeponet_f(nn.Module):
         self.attention2=SelfAttention2(input_dims=[2,2,2], hidden_dim=1)
         self.attention3=SelfAttention2(input_dims=[1,1,1], hidden_dim=1)
         self.attention4=SelfAttention2(input_dims=[1,1,1], hidden_dim=1)
-        self.attention5=SelfAttention2(input_dims=[2,2,2], hidden_dim=1)
+        self.attention5=SelfAttention2(input_dims=[3,3,3], hidden_dim=1)
         self.attention6=SelfAttention2(input_dims=[2,2,2], hidden_dim=1)
         self.conv1=ConvNet()
     
         self.linear1=FullyConnectedLayer(225,225)
-        self.linear2=FullyConnectedLayer(3,225)
+        self.linear2=FullyConnectedLayer(3,80)
         self.linear3=FullyConnectedLayer(225,225)
         self.linear4=FullyConnectedLayer(225,80)
         self.linear5=FullyConnectedLayer(225,80, activation=Snake())
@@ -102,16 +102,11 @@ class deeponet_f(nn.Module):
     def forward(self, X):
         y,f,dom, mask,sgnd=X
         f=f.view(-1,225,1)
-        sgnd=sgnd.view(-1,225,1)
-        y=y[:,0:2].unsqueeze(1).repeat(1, 225, 1)
-        x=torch.cat((f,sgnd),dim=-1)
+        dom=dom.view(-1,225,2)
+        mask=mask.view(-1,225,225)
+        x=torch.cat((f,dom),dim=-1)
         branch=self.linear6(self.attention5(x,x,x,mask).squeeze(-1)).squeeze(-1)
-        trunk=self.linear7(self.attention6(dom-y,dom-y,dom-y,mask).squeeze(-1)).squeeze(-1)
-        # branch1= self.linear1(self.attention1(f,f,f, mask).squeeze(-1)).view(-1,225,1)
-        # trunk1=self.linear2(y).view(-1,225,1)
-        # branch2= self.linear3(self.attention2(dom,dom,dom, mask).squeeze(-1)).squeeze(-1).view(-1,225,1)
-        # branch= self.linear4(self.attention3(branch2,branch2,branch1,mask).squeeze(-1))
-        # trunk= self.linear5(self.attention4(branch2,branch2,trunk1,mask).squeeze(-1))
+        trunk=self.linear2(y).squeeze(-1)
         return torch.sum(branch*trunk, dim=-1, keepdim=False)
 
 
