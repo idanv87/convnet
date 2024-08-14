@@ -90,7 +90,7 @@ class deeponet_f(nn.Module):
         self.linear2=FullyConnectedLayer(3,225)
         self.linear3=FullyConnectedLayer(2,1)
         self.linear4=FullyConnectedLayer(225,80)
-        self.linear5=FullyConnectedLayer(225,80)
+        self.linear5=FullyConnectedLayer(225,80, activation=Snake())
         self.linear6=FullyConnectedLayer(2,1)
         self.linear7=FullyConnectedLayer(2,1)
         

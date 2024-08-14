@@ -553,7 +553,7 @@ def custom_softmax(x, dim):
     
     return softmax_x
 class SelfAttention2(nn.Module):
-    def __init__(self, input_dims, hidden_dim, include_weigts=False):
+    def __init__(self, input_dims, hidden_dim, include_weigts=True):
         super(SelfAttention2, self).__init__()
         self.hidden_dim = hidden_dim
         
@@ -575,7 +575,7 @@ class SelfAttention2(nn.Module):
         attention_scores = torch.matmul(q, k.transpose(-2, -1)) / torch.sqrt(torch.tensor(self.hidden_dim, dtype=torch.float32))
         
         # attention_weights = F.softmax(attention_scores+mask, dim=-1)
-        attention_weights=custom_softmax(attention_scores, dim=-1)
+        attention_weights=custom_softmax(attention_scores+mask, dim=-1)
         
         output = torch.matmul(attention_weights, v)
         return output
