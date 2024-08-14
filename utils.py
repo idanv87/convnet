@@ -562,7 +562,7 @@ class SelfAttention2(nn.Module):
         self.value = nn.Linear(input_dims[2], hidden_dim,bias=False)
         self.include_weights=include_weigts
         
-    def forward(self, x1,x2,x3, mask=None):
+    def forward(self, x1,x2,x3, mask):
         if self.include_weights:
             q = self.query(x1)
             k = self.key(x2)

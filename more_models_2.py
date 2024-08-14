@@ -88,7 +88,7 @@ class deeponet_f(nn.Module):
     
         self.linear1=FullyConnectedLayer(225,225)
         self.linear2=FullyConnectedLayer(3,225)
-        self.linear3=FullyConnectedLayer(2,1)
+        self.linear3=FullyConnectedLayer(225,225)
         self.linear4=FullyConnectedLayer(225,80)
         self.linear5=FullyConnectedLayer(225,80, activation=Snake())
         self.linear6=FullyConnectedLayer(2,1)
@@ -110,8 +110,8 @@ class deeponet_f(nn.Module):
         branch1= self.linear1(self.attention1(f,f,f, mask).squeeze(-1)).view(-1,225,1)
         trunk1=self.linear2(y).view(-1,225,1)
         branch2= self.linear3(self.attention2(dom,dom,dom, mask).squeeze(-1)).squeeze(-1).view(-1,225,1)
-        branch= self.linear4(self.attention3(branch2,branch2,branch1).squeeze(-1))
-        trunk= self.linear5(self.attention4(branch2,branch2,trunk1).squeeze(-1))
+        branch= self.linear4(self.attention3(branch2,branch2,branch1,mask).squeeze(-1))
+        trunk= self.linear5(self.attention4(branch2,branch2,trunk1,mask).squeeze(-1))
         return torch.sum(branch*trunk, dim=-1, keepdim=False)
 
 
