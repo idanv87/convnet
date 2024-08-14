@@ -30,11 +30,13 @@ if __name__=="__main__":
     train_data=extract_path_from_dir(Constants.train_path+'data/')
     train_masks=extract_path_from_dir(Constants.train_path+'masks/')
     train_domains=extract_path_from_dir(Constants.train_path+'domains/')
+    train_sgnd=extract_path_from_dir(Constants.train_path+'sgnd/')
     train_functions=extract_path_from_dir(Constants.train_path+'functions/')
     
     s_train=[torch.load(f) for f in train_data]
     masks_train=torch.load(train_masks[0])
     domains_train=torch.load(train_domains[0])
+    sgnd_train=torch.load(train_sgnd[0])
     functions_train=torch.load(train_functions[0])
     
     X_train=[]
@@ -44,8 +46,9 @@ if __name__=="__main__":
         y=X[0]
         mask= masks_train[X[2]]
         domain= domains_train[X[2]]
+        sgnd= sgnd_train[X[2]]
         function=functions_train[X[2]][X[1]]
-        X_train.append([y,function,domain,mask])
+        X_train.append([y,function,domain,mask,sgnd])
         Y_train.append(s[1])
     train_dataset = SonarDataset(X_train, Y_train)
 
@@ -61,11 +64,13 @@ if __name__=="__main__":
     test_data=extract_path_from_dir(Constants.test_path+'data/')
     test_masks=extract_path_from_dir(Constants.test_path+'masks/')
     test_domains=extract_path_from_dir(Constants.test_path+'domains/')
+    test_sgnd=extract_path_from_dir(Constants.test_path+'sgnd/')
     test_functions=extract_path_from_dir(Constants.test_path+'functions/')
     
     s_test=[torch.load(f) for f in test_data]
     masks_test=torch.load(test_masks[0])
     domains_test=torch.load(test_domains[0])
+    sgnd_test=torch.load(test_sgnd[0])
     functions_test=torch.load(test_functions[0])
     
     X_test=[]
@@ -75,8 +80,9 @@ if __name__=="__main__":
         y=X[0]
         mask= masks_test[X[2]]
         domain= domains_test[X[2]]
+        sgnd= sgnd_test[X[2]]
         function=functions_test[X[2]][X[1]]
-        X_test.append([y,function,domain,mask])
+        X_test.append([y,function,domain,mask,sgnd])
         Y_test.append(s[1])
     
     test_dataset = SonarDataset(X_test, Y_test)

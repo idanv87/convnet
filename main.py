@@ -65,6 +65,7 @@ def generate_data(names,  save_path, number_samples,Seed):
     MASKS=[]
     F=[]
     DOMAINS=[]
+    SGND=[]
     for l,poly in enumerate(names):
         d_ref=domain(np.linspace(0,1,Constants.n),np.linspace(0,1,Constants.n))
        
@@ -81,6 +82,8 @@ def generate_data(names,  save_path, number_samples,Seed):
         f_temp=[]
         # DOMAINS.append(torch.tensor(sgnd, dtype=torch.float32))
         DOMAINS.append(torch.tensor(np.hstack((d_ref.X.reshape(-1, 1), d_ref.Y.reshape(-1, 1))), dtype=torch.float32))
+        SGND.append(torch.tensor(sgnd.flatten(), dtype=torch.float32))
+
 
 
         GRF=generate_grf(d_ref.X, d_ref.Y, n_samples=number_samples,l=0.1, seed=Seed)
@@ -104,6 +107,7 @@ def generate_data(names,  save_path, number_samples,Seed):
         F.append(f_temp)   
     save_uniqe(MASKS ,save_path+'masks/')   
     save_uniqe(DOMAINS ,save_path+'domains/')
+    save_uniqe(SGND ,save_path+'sgnd/')
     save_uniqe(F ,save_path+'functions/')
     return 1      
 
