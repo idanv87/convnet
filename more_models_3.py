@@ -1,3 +1,5 @@
+
+        
 import time
 
 
@@ -78,22 +80,21 @@ class deeponet_f(nn.Module):
         n_layers = 4
         self.n = p
 
-        # self.attention1=SelfAttention2(input_dims=[1,1,1], hidden_dim=1)
-        # self.attention2=SelfAttention2(input_dims=[2,2,2], hidden_dim=1)
-        # self.attention3=SelfAttention2(input_dims=[1,1,1], hidden_dim=1)
-        # self.attention4=SelfAttention2(input_dims=[1,1,1], hidden_dim=1)
+        self.attention1=SelfAttention2(input_dims=[1,1,1], hidden_dim=1)
+        self.attention2=SelfAttention2(input_dims=[2,2,2], hidden_dim=1)
+        self.attention3=SelfAttention2(input_dims=[1,1,1], hidden_dim=1)
+        self.attention4=SelfAttention2(input_dims=[1,1,1], hidden_dim=1)
         self.attention5=SelfAttention2(input_dims=[4,4,4], hidden_dim=1)
-        self.attention=nn.ModuleList([ self.attention5 for i in range(20)])
-        # self.attention6=SelfAttention2(input_dims=[2,2,2], hidden_dim=1)
-        # self.conv1=ConvNet()
+        self.attention6=SelfAttention2(input_dims=[2,2,2], hidden_dim=1)
+        self.conv1=ConvNet()
     
-        # self.linear1=FullyConnectedLayer(225,225)
-        self.linear2=FullyConnectedLayer(3,80)
-        # self.linear3=FullyConnectedLayer(225,225)
-        # self.linear4=FullyConnectedLayer(225,80)
-        # self.linear5=FullyConnectedLayer(225,80, activation=Snake())
-        self.linear6=FullyConnectedLayer(20,80, activation=Snake())
-        # self.linear7=FullyConnectedLayer(225,80)
+        self.linear1=FullyConnectedLayer(225,225)
+        self.linear2=FullyConnectedLayer(3,80, activation=Snake())
+        self.linear3=FullyConnectedLayer(225,225)
+        self.linear4=FullyConnectedLayer(225,80)
+        self.linear5=FullyConnectedLayer(225,80, activation=Snake())
+        self.linear6=FullyConnectedLayer(225,80)
+        self.linear7=FullyConnectedLayer(225,80)
         
         
         
@@ -107,8 +108,7 @@ class deeponet_f(nn.Module):
         dom=dom.view(-1,225,2)
         mask=mask.view(-1,225,225)
         x=torch.cat((f,dom,sgnd),dim=-1)
-        
-        branch=self.linear6(torch.stack([torch.mean(self.attention[i](x,x,x,mask).squeeze(-1),dim=1) for i in range(20)], dim=1))
+        branch=self.linear6(self.attention5(x,x,x,mask*0).squeeze(-1)).squeeze(-1)
         trunk=self.linear2(y).squeeze(-1)
         return torch.sum(branch*trunk, dim=-1, keepdim=False)
 
@@ -118,7 +118,6 @@ class deeponet_f(nn.Module):
         dom=dom.view(-1,225,2)
         mask=mask.view(-1,225,225)
         x=torch.cat((f,dom),dim=-1)
-        
         branch=self.linear6(self.attention5(x,x,x,mask).squeeze(-1)).squeeze(-1).repeat(y.shape[0],1)
         trunk=self.linear2(y).squeeze(-1)
         return torch.sum(branch*trunk, dim=-1, keepdim=False)
@@ -141,3 +140,4 @@ class deeponet(nn.Module):
             # return self.model1(X)
             return self.model1.forward2(X)+1J*self.model2.forward2(X)
 
+        
