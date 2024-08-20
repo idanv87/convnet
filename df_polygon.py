@@ -547,8 +547,9 @@ def make_domain(N,poly):
     Y=[d[1] for d in Dom]
     
     h=1/(N-1)
-    Dx=lil_matrix(np.zeros((len(Dom),len(Dom))).astype(complex))
-    Dy=lil_matrix(np.zeros((len(Dom),len(Dom))).astype(complex))
+
+    Dx=lil_matrix(lil_matrix((len(Dom),len(Dom))).astype(complex))
+    Dy=lil_matrix(lil_matrix((len(Dom),len(Dom))).astype(complex))
     x=np.linspace(0,1,N)
     y=np.linspace(0,1,N)
 
