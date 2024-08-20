@@ -83,16 +83,16 @@ class deeponet_f(nn.Module):
         # self.attention3=SelfAttention2(input_dims=[1,1,1], hidden_dim=1)
         # self.attention4=SelfAttention2(input_dims=[1,1,1], hidden_dim=1)
         self.attention5=SelfAttention2(input_dims=[4,4,4], hidden_dim=1)
-        self.attention=nn.ModuleList([ self.attention5 for i in range(50)])
+        self.attention=nn.ModuleList([ self.attention5 for i in range(20)])
         # self.attention6=SelfAttention2(input_dims=[2,2,2], hidden_dim=1)
         # self.conv1=ConvNet()
     
         # self.linear1=FullyConnectedLayer(225,225)
-        self.linear2=FullyConnectedLayer(3,50)
+        self.linear2=FullyConnectedLayer(3,80)
         # self.linear3=FullyConnectedLayer(225,225)
         # self.linear4=FullyConnectedLayer(225,80)
         # self.linear5=FullyConnectedLayer(225,80, activation=Snake())
-        self.linear6=FullyConnectedLayer(50,50, activation=Snake())
+        self.linear6=FullyConnectedLayer(50,80, activation=Snake())
         # self.linear7=FullyConnectedLayer(225,80)
         
         
