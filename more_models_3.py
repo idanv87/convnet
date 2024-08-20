@@ -118,7 +118,7 @@ class deeponet_f(nn.Module):
         dom=dom.view(-1,225,2)
         mask=mask.view(-1,225,225)
         x=torch.cat((f,dom),dim=-1)
-        branch=self.linear6(self.attention5(x,x,x,mask).squeeze(-1)).squeeze(-1).repeat(y.shape[0],1)
+        branch=self.linear6(self.attention5(x,x,x,mask*0).squeeze(-1)).squeeze(-1).repeat(y.shape[0],1)
         trunk=self.linear2(y).squeeze(-1)
         return torch.sum(branch*trunk, dim=-1, keepdim=False)
     
