@@ -44,8 +44,8 @@ from df_polygon import generate_example, generate_rect, generate_rect2, generate
 # 2024.08.03.18.45.57best_model.pth vanilla
 # 2024.08.05.10.41.58best_model.pth conv_deeponet
 
-# 2024.06.05.12.50.00best_model.pth small domain  
-# 2024.05.16.19.26.50best_model.pth with dom
+# 2024.08.14.08.35.39best_model.pth several domains 
+# 2024.08.14.07.35.15best_model.pth single domain more_models_2
 
 class IterationCounter:
     def __init__(self):
@@ -60,7 +60,7 @@ class TimeCounter:
         self.num_gmres = 0
 
 model=deeponet(dim=2,f_shape=Constants.n**2, domain_shape=2, p=80) 
-best_model=torch.load(Constants.path+'runs/'+'2024.08.13.16.35.33best_model.pth', map_location=torch.device('cpu'))
+best_model=torch.load(Constants.path+'runs/'+'2024.08.14.07.35.15best_model.pth', map_location=torch.device('cpu'))
 # model=vannila_deeponet(dim=2,f_shape=225, domain_shape=2, p=80)
 # best_model=torch.load(Constants.path+'runs/'+'2024.08.03.18.45.57best_model.pth')
 
@@ -80,7 +80,7 @@ def conv_NN(int_points,F,dom,mask,model):
     y=torch.tensor(int_points,dtype=torch.float32)
     f=torch.tensor(F,dtype=torch.float32)
     with torch.no_grad():
-        pred2=model.forward2([y,f,dom,mask])
+        pred2=model.forward2([y,f.unsqueeze(0),dom.unsqueeze(0),mask.unsqueeze(0),None])
     return torch.real(pred2).numpy()+1J*torch.imag(pred2).numpy()
 
 def vanilla_NN(int_points,F,model):
@@ -110,11 +110,11 @@ def NN( F, t1,t2,mask, model,v1,v2):
     return torch.real(pred2).numpy()+1J*torch.imag(pred2).numpy()
 
 
-def hints(A,b,x0, J, alpha,X,Y,X_ref,Y_ref,dom,mask, valid_indices, model, good_indices, poly):
+def hints(A,b,x0, J, alpha,X,Y,X_ref,Y_ref,dom,mask, valid_indices, model, good_indices, poly_out, poly_in):
     iter_counter=IterationCounter()
     int_points=np.vstack([X,Y]).T
-    sgnd=np.array([sgnd_distance((X[i],Y[i]),poly) for i in range(X.shape[0])])
-    int_points=np.vstack([int_points,sgnd]).T
+    sgnd=np.array([sgnd_distance((X[i],Y[i]),poly_out,poly_in) for i in range(len(X))])
+    int_points=np.concatenate((int_points,sgnd.reshape(sgnd.shape[0], 1)), axis=1)
     y1=torch.tensor(int_points,dtype=torch.float32).reshape(int_points.shape)
     try:
         v1=model.model1.branch2(model.model1.attention2(
@@ -178,9 +178,9 @@ def hints(A,b,x0, J, alpha,X,Y,X_ref,Y_ref,dom,mask, valid_indices, model, good_
             
         else:
             # start=time.time()  
-            x0=Gauss_zeidel2(U,L,b,x0)
+            # x0=Gauss_zeidel2(U,L,b,x0)
             iter_counter.num_gmres_iterations+=1
-            # x0,_,iter,_=solve_gmres(A,b,x0,maxiter=30, tol=1e-10)
+            x0,_,iter,_=solve_gmres(A,b,x0,maxiter=30, tol=1e-10)
 
         if k %50 ==0:   
             pass 
@@ -208,8 +208,12 @@ def hints(A,b,x0, J, alpha,X,Y,X_ref,Y_ref,dom,mask, valid_indices, model, good_
 
 def exp3b(model, sigma=0.1,l=0.2,mean=0):
     poly=np.array([[0,0],[1,0],[1,1],[0,1],[0,0]])
-    A, dom1,mask1, X,Y, X_ref, Y_ref, valid_indices=make_domain(15,poly)
+    poly_out=np.array([[0,0],[1,0],[1,0.5],[0.5,0.5],[0.5,1],[0,1],[0,0]])
     # poly=np.array([[0,0],[1.,0],[1.00,0.500],[10/14,0.500],[10/14,1.000],[5/14,1.000],[5/14,0.500],[0,0.500],[0.00,0.00]])
+    poly_out=np.array([[1/14,1/14],[3/14,1/14],[3/14,1],[1/14,1],[1/14,1/14]])
+
+    poly_in=None
+    # A, dom,mask, X,Y, X_ref, Y_ref, valid_indices=make_domain(57,poly_out)
     # poly=np.array([[0,0],[0.5,0],[0.5,1],[0,1],[0,0]])
     # p1=4/14
     # p2=7/14
@@ -217,25 +221,28 @@ def exp3b(model, sigma=0.1,l=0.2,mean=0):
     #                [p2,p1],[1,p1],[1,p2],[p2,p2],[p2,1],[p1,1],[p1,p2],
     #                [0,p2],[0,p1]])
     # poly=np.array([[0,0],[0.25,0],[0.25,1],[0,1],[0,0]])
-    # poly=generate_polygon_vertices(30)
-    # A, dom,mask, X,Y, X_ref, Y_ref, valid_indices=make_domain(57,poly)
+    # poly_out=generate_polygon_vertices(30)
+    # poly_in=None
+    # A, dom,mask, X,Y, X_ref, Y_ref, valid_indices=make_domain(225,poly_out)
     # poly=generate_polygon_vertices(40)
     
     # poly=np.array([[3/14,3/14],[7/14,3/14],[7/14,7/14],[3/14,7/14],[3/14,3/14]])
-    # A, dom,mask, X,Y, X_ref, Y_ref, valid_indices=make_domain(15,poly)
+    # A, dom,mask, X,Y, X_ref, Y_ref, valid_indices=make_domain(113,poly)
     # A, dom,mask, X,Y, X_ref, Y_ref, valid_indices=make_obstacle(29,poly)
-    # A,dom,mask, X, Y,X_ref,Y_ref, valid_indices=generate_example3(N=225)
+    # A,dom,mask, X, Y,X_ref,Y_ref, valid_indices=generate_example3(N=113)
     # plt.scatter(X,Y);plt.scatter(X_ref,Y_ref,color='red');plt.show()
     # A,dom,mask, X, Y,X_ref,Y_ref, valid_indices=generate_rect(15)
     # torch.save((A,dom,mask, X, Y,X_ref,Y_ref, valid_indices), Constants.outputs_path+'rect225.pt')
     # A,dom,mask, X, Y,X_ref,Y_ref, valid_indices=torch.load(Constants.outputs_path+'rect225.pt')
-    # A,dom,mask, X, Y,X_ref,Y_ref, valid_indices=generate_example_2(N=57)
-    
-    # torch.save((A,dom,mask, X, Y,X_ref,Y_ref, valid_indices), Constants.outputs_path+'L225.pt')     
+    # A,dom,mask, X, Y,X_ref,Y_ref, valid_indices=generate_example_2(N=225)
+    # torch.save((A,dom,mask, X, Y,X_ref,Y_ref, valid_indices), Constants.outputs_path+'L225.pt')
+
     # A,dom,mask, X, Y,X_ref,Y_ref, valid_indices=torch.load(Constants.outputs_path+'L225.pt')
     # print(A.shape)
-    # A,dom,mask, X,Y,X_ref,Y_ref, valid_indices=generate_example()
-    A,dom,mask, X,Y, X_ref, Y_ref, valid_indices=generate_obstacle2(57)
+
+    # A,dom,mask, X,Y, X_ref, Y_ref, valid_indices, poly_out, poly_in=generate_obstacle2(225)
+    A,dom,mask, X,Y, X_ref, Y_ref, valid_indices, poly_out, poly_in=torch.load(Constants.outputs_path+'obs225.pt')
+    # torch.save((A,dom,mask, X, Y,X_ref,Y_ref, valid_indices,poly_out,poly_in), Constants.outputs_path+'obs225.pt')
     # plt.scatter(X,Y);plt.scatter(X_ref,Y_ref,color='red');plt.show()
     # torch.save((A,dom,mask, X, Y,X_ref,Y_ref, valid_indices), Constants.outputs_path+'obs225.pt') 
     # A,dom,mask, X, Y,X_ref,Y_ref, valid_indices=torch.load(Constants.outputs_path+'obs225.pt')
@@ -259,18 +266,18 @@ def exp3b(model, sigma=0.1,l=0.2,mean=0):
     all_iter=[]
     all_time=[]
     for i in range(1):
-        b=np.random.normal(0,1,A.shape[0])
-        u=scipy.sparse.linalg.spsolve(A, b)
+        b=np.random.normal(10,10,A.shape[0])
+        # u=scipy.sparse.linalg.spsolve(A, b)
         f_ref[valid_indices]=b[good_indices]
         
         x0=(b+1J*b)*0.001
         
-        x,err,iters,time_counter=solve_gmres(A,b,x0)
-        print(time_counter)
-        print(iters)
-        print(err)
+        # x,err,iters,time_counter=solve_gmres(A,b,x0)
+        # print(time_counter)
+        # print(iters)
+        # print(err)
         
-        err, color, J, alpha, iters, iter_counter, time_counter=hints(A,b,x0,J=10, alpha=0.3,X=X,Y=Y,X_ref=X_ref,Y_ref=Y_ref,dom=dom,mask=mask, valid_indices=valid_indices, model=model, good_indices=good_indices, poly=poly)  
+        err, color, J, alpha, iters, iter_counter, time_counter=hints(A,b,x0,J=10, alpha=0.3,X=X,Y=Y,X_ref=X_ref,Y_ref=Y_ref,dom=dom,mask=mask*0, valid_indices=valid_indices, model=model, good_indices=good_indices, poly_out=poly_out,poly_in=poly_in)  
         all_iter.append(iters)
         all_time.append(time_counter)
 

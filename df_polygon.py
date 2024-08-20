@@ -313,7 +313,11 @@ def generate_obstacle2(N):
     
     # obs=domain(d_out.x[int (N/4):int (3*N/4)],d_out.y[int (N/4):int (3*N/4)])
     # obs=domain(d_out.x[int (N/10)+1:int (9*N/10)+1],d_out.y[int(N/10)+1:int (9*N/10)+1])
-    obs=domain(d_out.x[int (N/4)+1:int (3*N/4)+1],d_out.y[int(N/2)+1:int (7*N/10)+1])
+    
+    obs=domain(d_out.x[int (N/4)+1:int (3*N/4)+1],d_out.y[int(N/4)+1:int (3*N/4)+1])
+    poly_out=np.array([[0,0],[1,0],[1,1],[0,1],[0,0]])
+    poly_in=np.array([[obs.x[0],obs.x[0]],[obs.x[-1],obs.y[0]],[obs.x[-1],obs.y[-1]],[obs.x[0],obs.y[-1]],[obs.x[0],obs.x[0]]])
+  
     
     
     X=[]
@@ -341,7 +345,7 @@ def generate_obstacle2(N):
             Y_ref.append(d0.Y[i])
             
 
-    return csr_matrix(D)+Constants.k*scipy.sparse.identity(D.shape[0]),dom,mask, X,Y, X_ref, Y_ref, valid_indices
+    return csr_matrix(D)+Constants.k*scipy.sparse.identity(D.shape[0]),dom,mask, X,Y, X_ref, Y_ref, valid_indices, poly_out, poly_in
 
 
 
@@ -616,7 +620,6 @@ def make_domain(N,poly):
     D=Dx+Dy+Constants.k*scipy.sparse.identity(Dx.shape[0])
     valid_indices, non_valid_indices=masking_coordinates(X, Y)     
     d_ref=domain(np.linspace(0,1,Constants.n),np.linspace(0,1,Constants.n))
-    f_ref=np.zeros(d_ref.nx*d_ref.ny)
     mask=mask_matrix(valid_indices)
     mask=torch.tensor(mask, dtype=torch.float32)
     
