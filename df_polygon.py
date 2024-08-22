@@ -314,7 +314,7 @@ def generate_obstacle2(N):
     # obs=domain(d_out.x[int (N/4):int (3*N/4)],d_out.y[int (N/4):int (3*N/4)])
     # obs=domain(d_out.x[int (N/10)+1:int (9*N/10)+1],d_out.y[int(N/10)+1:int (9*N/10)+1])
     
-    obs=domain(d_out.x[int (N/4)+1:int (3*N/4)+1],d_out.y[int(N/4)+1:int (3*N/4)+1])
+    obs=domain(d_out.x[int (N/4)+1:int (2*N/4)+1],d_out.y[int(2*N/4)+1:int (3*N/4)+1])
     poly_out=np.array([[0,0],[1,0],[1,1],[0,1],[0,0]])
     poly_in=np.array([[obs.x[0],obs.x[0]],[obs.x[-1],obs.y[0]],[obs.x[-1],obs.y[-1]],[obs.x[0],obs.y[-1]],[obs.x[0],obs.x[0]]])
   
@@ -332,7 +332,7 @@ def generate_obstacle2(N):
     D=lil_matrix(d_out.D)[good_ind,:][:,good_ind]
     valid_indices, non_valid_indices=masking_coordinates(X, Y) 
     
-    f_ref=np.zeros(d0.nx*d0.ny)
+
     mask=mask_matrix(valid_indices)
     mask=torch.tensor(mask, dtype=torch.float32)
     dom=torch.tensor(np.hstack((d0.X.reshape(-1, 1), d0.Y.reshape(-1, 1))), dtype=torch.float32)

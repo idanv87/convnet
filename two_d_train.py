@@ -15,8 +15,8 @@ from constants import Constants
 from packages.schedualer import LRScheduler, SaveBestModel
 from utils import norms
 # from two_d_model import deeponet
-from more_models import conv_deeponet
-from more_models_4 import deeponet
+
+from more_models_5 import deeponet
 if __name__=="__main__":
     n=Constants.n
     model=deeponet(dim=2,f_shape=n**2, domain_shape=2, p=80) 

@@ -93,7 +93,7 @@ class deeponet_f(nn.Module):
         self.linear3=FullyConnectedLayer(225,225)
         self.linear4=FullyConnectedLayer(225,80)
         self.linear5=FullyConnectedLayer(225,80, activation=Snake())
-        self.linear6=FullyConnectedLayer(225,80)
+        self.linear6=FullyConnectedLayer(225,80, activation=Snake())
         self.linear7=FullyConnectedLayer(225,80)
         
         
@@ -108,18 +108,18 @@ class deeponet_f(nn.Module):
         dom=dom.view(-1,225,2)
         mask=mask.view(-1,225,225)
         x=torch.cat((f,dom,sgnd),dim=-1)
-        branch=self.linear6(self.attention5(x,x,x,mask*0).squeeze(-1)).squeeze(-1)
+        branch=self.linear6(self.attention5(x,x,x,mask).squeeze(-1)).squeeze(-1)
         trunk=self.linear2(y).squeeze(-1)
         return torch.sum(branch*trunk, dim=-1, keepdim=False)
 
     def forward2(self, X):
         y,f,dom, mask,sgnd=X
         f=f.view(-1,225,1)
-        sgnd=sgnd.view(-1,225,1)
         dom=dom.view(-1,225,2)
+        sgnd=sgnd.view(-1,225,1)
         mask=mask.view(-1,225,225)
-        x=torch.cat((f,dom, sgnd),dim=-1)
-        branch=self.linear6(self.attention5(x,x,x,mask*0).squeeze(-1)).squeeze(-1).repeat(y.shape[0],1)
+        x=torch.cat((f,dom,sgnd),dim=-1)
+        branch=self.linear6(self.attention5(x,x,x,mask).squeeze(-1)).squeeze(-1).repeat(y.shape[0],1)
         trunk=self.linear2(y).squeeze(-1)
         return torch.sum(branch*trunk, dim=-1, keepdim=False)
     

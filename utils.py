@@ -999,7 +999,7 @@ def generate_polygon_vertices(n):
         angle = i * angle_increment
         x = math.cos(angle)
         y = math.sin(angle)
-        vertices.append((4/14*x+0.5, 4/14*y+0.5))
+        vertices.append((3/14*x+0.5, 3/14*y+0.5))
     
     vertices.append(vertices[0])
     return np.array(vertices)

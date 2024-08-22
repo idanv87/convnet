@@ -121,17 +121,17 @@ def generate_my_naca():
             
 # generate_my_naca()   
 
-if __name__=='__main__':
-    m=1
-    p=1
-    k=50
-    f=foil_function(m/100,p/10,k/100)
-    x=np.linspace(0,1,4)
-    xu,yu,xl,yl=f(x)
+# if __name__=='__main__':
+#     m=1
+#     p=1
+#     k=50
+#     f=foil_function(m/100,p/10,k/100)
+#     x=np.linspace(0,1,4)
+#     xu,yu,xl,yl=f(x)
 
-    X=np.hstack((xu,xl[1:-1]))
-    Y=np.hstack((yu,yl[1:-1]))
-    plt.scatter(X,Y)
-    plt.show(block=False)
+#     X=np.hstack((xu,xl[1:-1]))
+#     Y=np.hstack((yu,yl[1:-1]))
+#     plt.scatter(X,Y)
+#     plt.show(block=False)
 
   
