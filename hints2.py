@@ -154,9 +154,9 @@ def hints(A,b,x0, J, alpha,X,Y,X_ref,Y_ref,dom,mask, valid_indices, model, good_
 
 def exp3b(model, sigma=0.1,l=0.2,mean=0):
     poly_in=None
-    # poly_out=np.array([[0,0],[1,0],[1,0.5],[0.5,0.5],[0.5,1],[0,1],[0,0]])
+    poly_out=np.array([[0,0],[1,0],[1,0.5],[0.5,0.5],[0.5,1],[0,1],[0,0]])
     # poly_out=np.array([[0,0],[1,0],[1,5/14],[9/14,5/14],[9/14,1],[4/14,1],[4/14,5/14],[0,5/14],[0,0]])
-    poly_out=np.array([[2/14,2/14],[1,2/14],[1,5/14],[9/14,5/14],[9/14,1],[4/14,1],[4/14,5/14],[2/14,5/14],[2/14,2/14]])
+    # poly_out=np.array([[2/14,2/14],[1,2/14],[1,5/14],[9/14,5/14],[9/14,1],[4/14,1],[4/14,5/14],[2/14,5/14],[2/14,2/14]])
 
     # poly_out=np.array([[2/14,2/14],[10/14,2/14],[10/14,4/14],[7/14,4/14],[7/14,10/14],[2/14,10/14],[2/14,2/14]])
     # poly_out=generate_polygon_vertices(30)
@@ -179,9 +179,9 @@ def exp3b(model, sigma=0.1,l=0.2,mean=0):
     all_iter=[]
     all_time=[]
     for i in range(1):
-        b=np.cos(5*math.pi*np.array(X))*np.cos(5*math.pi*np.array(Y))
+        # b=np.cos(5*math.pi*np.array(X))*np.cos(5*math.pi*np.array(Y))
         # b=np.exp(np.array(X)**2)
-        # b=np.random.normal(10,10,A.shape[0])
+        b=np.random.normal(10,10,A.shape[0])
         # u=scipy.sparse.linalg.spsolve(A, b)
         f_ref[valid_indices]=b[good_indices]
         
@@ -192,15 +192,15 @@ def exp3b(model, sigma=0.1,l=0.2,mean=0):
         # print(iters)
         # print(err)
         
-        err, color, J, alpha, iters, iter_counter, time_counter=hints(A,b,x0,J=50, alpha=0.3,X=X,Y=Y,X_ref=X_ref,Y_ref=Y_ref,dom=dom,mask=mask, valid_indices=valid_indices, model=model, good_indices=good_indices, poly_out=poly_out,poly_in=poly_in)  
+        err, color, J, alpha, iters, iter_counter, time_counter=hints(A,b,x0,J=100, alpha=0.3,X=X,Y=Y,X_ref=X_ref,Y_ref=Y_ref,dom=dom,mask=mask, valid_indices=valid_indices, model=model, good_indices=good_indices, poly_out=poly_out,poly_in=poly_in)  
         all_iter.append(iters)
         all_time.append(time_counter)
 
     torch.save({'X':X, 'Y':Y,'all_iter':all_iter, 'all_time':all_time,'err':err}, Constants.outputs_path+'output14.pt')     
     
 # exp3b(model_mult_5) 
-# exp3b(model_mult_4)    
-exp3b(model_mult_3)  
+exp3b(model_mult_4)    
+# exp3b(model_mult_3)  
 
 # data=torch.load(Constants.outputs_path+'output14.pt')
 # print(np.mean(data['all_iter']))    

@@ -38,7 +38,7 @@ class Constants:
     k=21
     l=1J*np.sqrt(k)
     h = 1/30
-    batch_size=100
+    batch_size=200
     num_epochs = 6000
     n=15
   
