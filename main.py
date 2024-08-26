@@ -31,7 +31,7 @@ names=[np.array([[0,0],[1,0],[1,1],[0,1],[0,0]]),
        ]
 
 test_names=[np.array([[0,0],[1,0],[1,0.5],[0.5,0.5],[0.5,1],[0,1],[0,0]])]
-# names=[names[0]]
+names=[names[0]]
 # names=[]
 # for k in range(1,4):
 #     for l in range(1,4):

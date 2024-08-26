@@ -30,7 +30,7 @@ from two_d_data_set import *
 from packages.my_packages import Gauss_zeidel, interpolation_2D, gs_new, Gauss_zeidel2
 
 # from two_d_model import  deeponet
-import  more_models_2, more_models_3, more_models_4
+import  more_models_2, more_models_3, more_models_4, more_models_5
 from test_deeponet import domain
 from main import generate_f_g
 
@@ -124,9 +124,9 @@ def hints(A,b,x0, J, alpha,X,Y,X_ref,Y_ref,dom,mask, valid_indices, model, good_
             
         else:
             # start=time.time()  
-            # x0=Gauss_zeidel2(U,L,b,x0)
+            x0=Gauss_zeidel2(U,L,b,x0)
             iter_counter.num_gmres_iterations+=1
-            x0,_,iter,_=solve_gmres(A,b,x0,maxiter=30, tol=1e-10)
+            # x0,_,iter,_=solve_gmres(A,b,x0,maxiter=30, tol=1e-10)
 
         if k %50 ==0:   
             pass 
@@ -153,13 +153,14 @@ def exp3b(model, sigma=0.1,l=0.2,mean=0):
     # poly_out=np.array([[2/14,2/14],[10/14,2/14],[10/14,4/14],[7/14,4/14],[7/14,10/14],[2/14,10/14],[2/14,2/14]])
     # poly_out=generate_polygon_vertices(30)
     # poly_out=np.array([[0,0],[1,0],[1,0.5],[0.5,0.5],[0.5,1],[0,1],[0,0]])
-    A, dom,mask, X,Y, X_ref, Y_ref, valid_indices=make_domain(225,poly_out)
+    # A, dom,mask, X,Y, X_ref, Y_ref, valid_indices=make_domain(113,poly_out)
+    # plt.scatter(X,Y);plt.show()
     
 
     
     # torch.save((A,dom,mask, X, Y,X_ref,Y_ref, valid_indices), Constants.outputs_path+'L225.pt')
     # A,dom,mask, X, Y,X_ref,Y_ref, valid_indices=torch.load(Constants.outputs_path+'L225.pt')
-    # A,dom,mask, X,Y, X_ref, Y_ref, valid_indices, poly_out, poly_in=generate_obstacle2(113)
+    A,dom,mask, X,Y, X_ref, Y_ref, valid_indices, poly_out, poly_in=generate_obstacle2(29)
     # A,dom,mask, X,Y, X_ref, Y_ref, valid_indices, poly_out, poly_in=torch.load(Constants.outputs_path+'obs225.pt')
 
     print(A.shape)
@@ -183,7 +184,7 @@ def exp3b(model, sigma=0.1,l=0.2,mean=0):
         # print(iters)
         # print(err)
         
-        err, color, J, alpha, iters, iter_counter, time_counter=hints(A,b,x0,J=2, alpha=0.3,X=X,Y=Y,X_ref=X_ref,Y_ref=Y_ref,dom=dom,mask=mask, valid_indices=valid_indices, model=model, good_indices=good_indices, poly_out=poly_out,poly_in=poly_in)  
+        err, color, J, alpha, iters, iter_counter, time_counter=hints(A,b,x0,J=20, alpha=0.3,X=X,Y=Y,X_ref=X_ref,Y_ref=Y_ref,dom=dom,mask=mask, valid_indices=valid_indices, model=model, good_indices=good_indices, poly_out=poly_out,poly_in=poly_in)  
         all_iter.append(iters)
         all_time.append(time_counter)
 

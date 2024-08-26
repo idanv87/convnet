@@ -16,10 +16,10 @@ from packages.schedualer import LRScheduler, SaveBestModel
 from utils import norms
 # from two_d_model import deeponet
 
-from more_models_5 import deeponet
+from more_models_6 import vannila_deeponet
 if __name__=="__main__":
     n=Constants.n
-    model=deeponet(dim=2,f_shape=n**2, domain_shape=2, p=80) 
+    model=vannila_deeponet(dim=2,f_shape=n**2, domain_shape=2, p=80) 
     # model=vannila_deeponet(dim=2,f_shape=n**2, domain_shape=2, p=80)
     total_params = sum(p.numel() for p in model.parameters())
     print(f"{total_params:,} total parameters.")
