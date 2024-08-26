@@ -1051,3 +1051,21 @@ def plot_matrix(A):
             
             
             
+def plot_results(x, y_pred, y_test):
+    x=x.to('cpu')
+    y_pred=y_pred.to('cpu')
+    y_test=y_test.to('cpu')
+    error=torch.linalg.norm(y_test-y_pred)/torch.linalg.norm(y_test)
+    fig, ax=plt.subplots(1,2)
+    fig.suptitle(f'relative L2 Error: {error:.3e}')
+    im0=ax[0].scatter(x[:,0],x[:,1],c=y_test)
+    fig.colorbar(im0, ax=ax[0])
+    im1=ax[1].scatter(x[:,0],x[:,1],c=y_pred)
+    fig.colorbar(im1, ax=ax[1])
+    # im2=ax[2].scatter(x,y,c=abs(y_pred-y_test))
+    # fig.colorbar(im2, ax=ax[2])
+    ax[0].set_title('test')
+    ax[1].set_title('pred')
+    # ax[2].set_title('error')
+
+        

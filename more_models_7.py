@@ -88,8 +88,8 @@ class deeponet_f(nn.Module):
         y=y[:,:2]
         
         f=f.view(-1,1, 15,15)
-        sgnd=sgnd.view(-1,1, 15,15)
-
+        sgnd=torch.sign(sgnd.view(-1,1, 15,15)+1e-14)
+        
 
         branch1= self.branch1(f)
         branch2= self.branch2(sgnd)
@@ -99,11 +99,16 @@ class deeponet_f(nn.Module):
         return torch.sum(branch*trunk, dim=-1, keepdim=False)
 
     def forward2(self, X):
-        y,f,_, _,_=X
+        y,f,dom, mask,sgnd=X
         y=y[:,:2]
+        
         f=f.view(-1,1, 15,15)
+        sgnd=torch.sign(sgnd.view(-1,1, 15,15)+1e-14)
 
-        branch= self.branch(f).repeat(y.shape[0],1)
+
+        branch1= self.branch1(f)
+        branch2= self.branch2(sgnd)
+        branch=self.branch(torch.cat((branch1,branch2),dim=-1)).repeat(y.shape[0],1)
         trunk=self.trunk(y)
         return torch.sum(branch*trunk, dim=-1, keepdim=False)
     

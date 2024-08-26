@@ -30,7 +30,7 @@ from two_d_data_set import *
 from packages.my_packages import Gauss_zeidel, interpolation_2D, gs_new, Gauss_zeidel2
 
 # from two_d_model import  deeponet
-import  more_models_2, more_models_3, more_models_4, more_models_5, more_models_6
+import  more_models_2, more_models_3, more_models_4, more_models_5, more_models_6, more_models_8
 from test_deeponet import domain
 from main import generate_f_g
 
@@ -72,9 +72,14 @@ model_mult_5=more_models_5.deeponet(dim=2,f_shape=Constants.n**2, domain_shape=2
 best_model=torch.load(Constants.path+'runs/'+'2024.08.26.04.32.13best_model.pth', map_location=torch.device('cpu'))
 model_mult_5.load_state_dict(best_model['model_state_dict'])
 
-# model_single_6=more_models_6.vannila_deeponet(dim=2,f_shape=Constants.n**2, domain_shape=2, p=80) 
-# best_model=torch.load(Constants.path+'runs/'+'', map_location=torch.device('cpu'))
-# model_single_6.load_state_dict(best_model['model_state_dict'])
+model_single_6=more_models_6.vannila_deeponet(dim=2,f_shape=Constants.n**2, domain_shape=2, p=80) 
+best_model=torch.load(Constants.path+'runs/'+'2024.08.26.10.35.07best_model.pth', map_location=torch.device('cpu'))
+model_single_6.load_state_dict(best_model['model_state_dict'])
+
+
+model_mult_8=more_models_8.deeponet(dim=2,f_shape=Constants.n**2, domain_shape=2, p=80) 
+best_model=torch.load(Constants.path+'runs/'+'2024.08.26.11.31.36best_model.pth', map_location=torch.device('cpu'))
+model_mult_8.load_state_dict(best_model['model_state_dict'])
 
 def conv_NN(int_points,F,dom,mask,sgnd,model):
     sgnd=torch.tensor(sgnd.flatten(), dtype=torch.float32)  
@@ -103,7 +108,7 @@ def hints(A,b,x0, J, alpha,X,Y,X_ref,Y_ref,dom,mask, valid_indices, model, good_
     err=[]
     color=[]
     start=time.time()
-    for k in range(6000):
+    for k in range(12000):
       
         if (k+1)%J==0:
         
@@ -117,8 +122,8 @@ def hints(A,b,x0, J, alpha,X,Y,X_ref,Y_ref,dom,mask, valid_indices, model, good_
             f_ref_real=np.zeros(Constants.n**2)
             f_ref_imag=np.zeros(Constants.n**2)
             
-            f_ref_real[valid_indices]=(f_real)/s_real
-            f_ref_imag[valid_indices]=(f_imag)/s_imag
+            f_ref_real[valid_indices]=(f_real)/(s_real+1e-15)
+            f_ref_imag[valid_indices]=(f_imag)/(s_imag+1e-15)
 
             corr_real=(conv_NN(int_points,f_ref_real,dom,mask,sgnd, model))*s_real
             iter_counter.num_NN_iterations+=1
@@ -139,6 +144,7 @@ def hints(A,b,x0, J, alpha,X,Y,X_ref,Y_ref,dom,mask, valid_indices, model, good_
         if k %50 ==0:   
             pass 
             print(np.linalg.norm(A@x0-b)/np.linalg.norm(b))
+            
             print(k)
 
         err.append(np.linalg.norm(A@x0-b)/np.linalg.norm(b))
@@ -154,21 +160,35 @@ def hints(A,b,x0, J, alpha,X,Y,X_ref,Y_ref,dom,mask, valid_indices, model, good_
 
 def exp3b(model, sigma=0.1,l=0.2,mean=0):
     poly_in=None
-    poly_out=np.array([[0,0],[1,0],[1,0.5],[0.5,0.5],[0.5,1],[0,1],[0,0]])
+    # poly_out=np.array([[0,0],[1,0],[1,4/14],[4/14,4/14],[4/14,1],[0,1],[0,0]])
+    poly_out=np.array([[0,0],[0.5,0],[0.5,0.5],[1,0.5],[1,1],[0,1],[0,0]])
+    hight=12/14
+    poly_out=np.array([[0,0],[1,0],[1,0.5],[9/14,0.5],[9/14,hight],[7/14,hight],
+                       [7/14,0.5],[5/14,0.5],[5/14,hight],[3/14,hight],[3/14,0.5],
+                       [0,0.5],[0,0]])
+    # poly_out,A, dom,mask, X,Y, X_ref, Y_ref, valid_indices=torch.load(Constants.outputs_path+'two_stripes.pt')
+    # poly_out=np.array([[0,0],[1,0],[1,3/14],[3/14,3/14],[3/14,5/14],[1,5/14],[1,1],[0,1],[0,0]])
     # poly_out=np.array([[0,0],[1,0],[1,5/14],[9/14,5/14],[9/14,1],[4/14,1],[4/14,5/14],[0,5/14],[0,0]])
-    # poly_out=np.array([[2/14,2/14],[1,2/14],[1,5/14],[9/14,5/14],[9/14,1],[4/14,1],[4/14,5/14],[2/14,5/14],[2/14,2/14]])
+    # poly_out=np.array([[2/14,2/14],[10/14,2/14],[10/14,3/14],[4/14,3/14],[4/14,10/14],[2/14,10/14],[2/14,2/14]])-np.array([2/14,2/14])
 
-    # poly_out=np.array([[2/14,2/14],[10/14,2/14],[10/14,4/14],[7/14,4/14],[7/14,10/14],[2/14,10/14],[2/14,2/14]])
-    # poly_out=generate_polygon_vertices(30)
+    A, dom,mask, X,Y, X_ref, Y_ref, valid_indices=make_domain(57,poly_out)
+    # poly_out=np.array([[2/14,2/14],[1,2/14],[1,5/14],[9/14,5/14],[9/14,9/14],[4/14,9/14],[4/14,5/14],[2/14,5/14],[2/14,2/14]])
+    # poly_out=np.array([[2/14,2/14],[10/14,2/14],[10/14,3/14],[4/14,3/14],[4/14,10/14],[2/14,10/14],[2/14,2/14]])-np.array([2/14,2/14])
+    # poly_out=np.array([[0,2/14],[3/14,2/14],[3/14,0],[6/14,0],[6/14,2/14],[8/14,2/14],
+                    #    [8/14,5/14],[6/14,5/14],[6/14,8/14],[3/14,8/14],[3/14,5/14],[0,5/14],[0,2/14]])+np.array([7/14,0])
+    # poly_out=generate_polygon_vertices(30)-np.array([3/14,3/14])
     # poly_out=np.array([[0,0],[1,0],[1,0.5],[0.5,0.5],[0.5,1],[0,1],[0,0]])
-    A, dom,mask, X,Y, X_ref, Y_ref, valid_indices=make_domain(113,poly_out)
+
+    # torch.save((poly_out,A,dom,mask, X, Y,X_ref,Y_ref, valid_indices), Constants.outputs_path+'two_stripes.pt')
+    # A,dom,mask, X,Y, X_ref, Y_ref, valid_indices, poly_out, poly_in=generate_obstacle2(57)
     # plt.scatter(X,Y);plt.show()
+    
     
 
     
     # torch.save((A,dom,mask, X, Y,X_ref,Y_ref, valid_indices), Constants.outputs_path+'L225.pt')
     # A,dom,mask, X, Y,X_ref,Y_ref, valid_indices=torch.load(Constants.outputs_path+'L225.pt')
-    # A,dom,mask, X,Y, X_ref, Y_ref, valid_indices, poly_out, poly_in=generate_obstacle2(29)
+    
     # A,dom,mask, X,Y, X_ref, Y_ref, valid_indices, poly_out, poly_in=torch.load(Constants.outputs_path+'obs225.pt')
 
     print(A.shape)
@@ -179,7 +199,7 @@ def exp3b(model, sigma=0.1,l=0.2,mean=0):
     all_iter=[]
     all_time=[]
     for i in range(1):
-        # b=np.cos(5*math.pi*np.array(X))*np.cos(5*math.pi*np.array(Y))
+        # b=np.cos(6*math.pi*np.array(X))*np.cos(6*math.pi*np.array(Y))
         # b=np.exp(np.array(X)**2)
         b=np.random.normal(10,10,A.shape[0])
         # u=scipy.sparse.linalg.spsolve(A, b)
@@ -192,15 +212,16 @@ def exp3b(model, sigma=0.1,l=0.2,mean=0):
         # print(iters)
         # print(err)
         
-        err, color, J, alpha, iters, iter_counter, time_counter=hints(A,b,x0,J=100, alpha=0.3,X=X,Y=Y,X_ref=X_ref,Y_ref=Y_ref,dom=dom,mask=mask, valid_indices=valid_indices, model=model, good_indices=good_indices, poly_out=poly_out,poly_in=poly_in)  
+        err, color, J, alpha, iters, iter_counter, time_counter=hints(A,b,x0,J=300, alpha=0.3,X=X,Y=Y,X_ref=X_ref,Y_ref=Y_ref,dom=dom,mask=mask, valid_indices=valid_indices, model=model, good_indices=good_indices, poly_out=poly_out,poly_in=poly_in)  
         all_iter.append(iters)
         all_time.append(time_counter)
 
     torch.save({'X':X, 'Y':Y,'all_iter':all_iter, 'all_time':all_time,'err':err}, Constants.outputs_path+'output14.pt')     
     
-# exp3b(model_mult_5) 
+# exp3b(model_mult_8)  
 exp3b(model_mult_4)    
-# exp3b(model_mult_3)  
+# exp3b(model_mult_3) 
+# exp3b(model_single_6) 
 
 # data=torch.load(Constants.outputs_path+'output14.pt')
 # print(np.mean(data['all_iter']))    
