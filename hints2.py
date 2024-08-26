@@ -30,7 +30,7 @@ from two_d_data_set import *
 from packages.my_packages import Gauss_zeidel, interpolation_2D, gs_new, Gauss_zeidel2
 
 # from two_d_model import  deeponet
-import  more_models_2, more_models_3, more_models_4, more_models_5
+import  more_models_2, more_models_3, more_models_4, more_models_5, more_models_6
 from test_deeponet import domain
 from main import generate_f_g
 
@@ -67,6 +67,14 @@ model_mult_3.load_state_dict(best_model['model_state_dict'])
 model_mult_4=more_models_4.deeponet(dim=2,f_shape=Constants.n**2, domain_shape=2, p=80) 
 best_model=torch.load(Constants.path+'runs/'+'2024.08.20.08.55.58best_model.pth', map_location=torch.device('cpu'))
 model_mult_4.load_state_dict(best_model['model_state_dict'])
+
+model_mult_5=more_models_5.deeponet(dim=2,f_shape=Constants.n**2, domain_shape=2, p=80) 
+best_model=torch.load(Constants.path+'runs/'+'2024.08.26.04.32.13best_model.pth', map_location=torch.device('cpu'))
+model_mult_5.load_state_dict(best_model['model_state_dict'])
+
+# model_single_6=more_models_6.vannila_deeponet(dim=2,f_shape=Constants.n**2, domain_shape=2, p=80) 
+# best_model=torch.load(Constants.path+'runs/'+'', map_location=torch.device('cpu'))
+# model_single_6.load_state_dict(best_model['model_state_dict'])
 
 def conv_NN(int_points,F,dom,mask,sgnd,model):
     sgnd=torch.tensor(sgnd.flatten(), dtype=torch.float32)  
@@ -153,14 +161,14 @@ def exp3b(model, sigma=0.1,l=0.2,mean=0):
     # poly_out=np.array([[2/14,2/14],[10/14,2/14],[10/14,4/14],[7/14,4/14],[7/14,10/14],[2/14,10/14],[2/14,2/14]])
     # poly_out=generate_polygon_vertices(30)
     # poly_out=np.array([[0,0],[1,0],[1,0.5],[0.5,0.5],[0.5,1],[0,1],[0,0]])
-    # A, dom,mask, X,Y, X_ref, Y_ref, valid_indices=make_domain(113,poly_out)
+    A, dom,mask, X,Y, X_ref, Y_ref, valid_indices=make_domain(113,poly_out)
     # plt.scatter(X,Y);plt.show()
     
 
     
     # torch.save((A,dom,mask, X, Y,X_ref,Y_ref, valid_indices), Constants.outputs_path+'L225.pt')
     # A,dom,mask, X, Y,X_ref,Y_ref, valid_indices=torch.load(Constants.outputs_path+'L225.pt')
-    A,dom,mask, X,Y, X_ref, Y_ref, valid_indices, poly_out, poly_in=generate_obstacle2(29)
+    # A,dom,mask, X,Y, X_ref, Y_ref, valid_indices, poly_out, poly_in=generate_obstacle2(29)
     # A,dom,mask, X,Y, X_ref, Y_ref, valid_indices, poly_out, poly_in=torch.load(Constants.outputs_path+'obs225.pt')
 
     print(A.shape)
@@ -171,9 +179,9 @@ def exp3b(model, sigma=0.1,l=0.2,mean=0):
     all_iter=[]
     all_time=[]
     for i in range(1):
-        # b=np.cos(5*math.pi*np.array(X))*np.cos(5*math.pi*np.array(Y))
+        b=np.cos(5*math.pi*np.array(X))*np.cos(5*math.pi*np.array(Y))
         # b=np.exp(np.array(X)**2)
-        b=np.random.normal(10,10,A.shape[0])
+        # b=np.random.normal(10,10,A.shape[0])
         # u=scipy.sparse.linalg.spsolve(A, b)
         f_ref[valid_indices]=b[good_indices]
         
@@ -184,13 +192,14 @@ def exp3b(model, sigma=0.1,l=0.2,mean=0):
         # print(iters)
         # print(err)
         
-        err, color, J, alpha, iters, iter_counter, time_counter=hints(A,b,x0,J=20, alpha=0.3,X=X,Y=Y,X_ref=X_ref,Y_ref=Y_ref,dom=dom,mask=mask, valid_indices=valid_indices, model=model, good_indices=good_indices, poly_out=poly_out,poly_in=poly_in)  
+        err, color, J, alpha, iters, iter_counter, time_counter=hints(A,b,x0,J=50, alpha=0.3,X=X,Y=Y,X_ref=X_ref,Y_ref=Y_ref,dom=dom,mask=mask, valid_indices=valid_indices, model=model, good_indices=good_indices, poly_out=poly_out,poly_in=poly_in)  
         all_iter.append(iters)
         all_time.append(time_counter)
 
     torch.save({'X':X, 'Y':Y,'all_iter':all_iter, 'all_time':all_time,'err':err}, Constants.outputs_path+'output14.pt')     
     
-exp3b(model_mult_4)    
+# exp3b(model_mult_5) 
+# exp3b(model_mult_4)    
 exp3b(model_mult_3)  
 
 # data=torch.load(Constants.outputs_path+'output14.pt')

@@ -60,9 +60,9 @@ class ConvNet(nn.Module):
         x = x.view(x.size(0), -1)
         
         # Pass through fully connected layers with ReLU activation
-        x = self.activation(self.fc1(x))
-        x = self.activation(self.fc2(x))
-        x = self.fc3(x)
+        # x = self.activation(self.fc1(x))
+        # x = self.activation(self.fc2(x))
+        # x = self.fc3(x)
 
         
         return x
@@ -70,26 +70,30 @@ class ConvNet(nn.Module):
 
 
 
-class vanilla_deeponet_f(nn.Module):
+class deeponet_f(nn.Module):
     def __init__(self, dim,f_shape, domain_shape,  p):
         super().__init__()
 
         n_layers = 4
         self.n = p
         
-        self.branch=ConvNet()
+        self.branch1=ConvNet()
+        self.branch2=ConvNet()
+        self.branch=FullyConnectedLayer(200,80)
 
         self.trunk=FullyConnectedLayer(2,80)
        
     def forward(self, X):
-        y,f,_, _,_=X
+        y,f,dom, mask,sgnd=X
         y=y[:,:2]
         
         f=f.view(-1,1, 15,15)
+        sgnd=sgnd.view(-1,1, 15,15)
 
 
-        branch= self.branch(f)
-        
+        branch1= self.branch1(f)
+        branch2= self.branch2(sgnd)
+        branch=self.branch(torch.cat((branch1,branch2),dim=-1))
         # trunk = self.attention2(y.unsqueeze(-1),dom,y.unsqueeze(-1)).squeeze(-1)
         trunk=self.trunk(y)
         return torch.sum(branch*trunk, dim=-1, keepdim=False)
@@ -103,13 +107,13 @@ class vanilla_deeponet_f(nn.Module):
         trunk=self.trunk(y)
         return torch.sum(branch*trunk, dim=-1, keepdim=False)
     
-class vannila_deeponet(nn.Module):  
+class deeponet(nn.Module):  
         def __init__(self, dim,f_shape, domain_shape,  p):
             super().__init__()
             self.dim=dim
             self.p=p
-            self.model1=vanilla_deeponet_f(dim,f_shape, domain_shape,  p)
-            self.model2=vanilla_deeponet_f(dim,f_shape, domain_shape,  p)
+            self.model1=deeponet_f(dim,f_shape, domain_shape,  p)
+            self.model2=deeponet_f(dim,f_shape, domain_shape,  p)
          
         def forward(self, X):
    
