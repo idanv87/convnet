@@ -28,10 +28,10 @@ names=[np.array([[0,0],[1,0],[1,1],[0,1],[0,0]]),
        np.array([[0,0.5],[0.5,0.5],[0.5,1],[0,1],[0,0.5]]),
        np.array([[0,0.5],[1,0.5],[1,1],[0,1],[0,0.5]]),
        np.array([[0.5,0.5],[1,0.5],[1,1],[0.5,1],[0.5,0.5]]),
-       np.array([[0,0],[1,0],[1,0.5],[0.5,0.5],[0.5,1],[0,1],[0,0]]),
-       np.array([[0.5,0],[1,0],[1,1],[0,1],[0,0.5],[0.5,0.5],[0.5,0]]),
-       np.array([[0,0],[1,0],[1,1],[0.5,1],[0.5,0.5],[0,0.5],[0,0]]),
-       np.array([[0,0],[0.5,0],[0.5,0.5],[1,0.5],[1,1],[0,1],[0,0]])
+    #    np.array([[0,0],[1,0],[1,0.5],[0.5,0.5],[0.5,1],[0,1],[0,0]]),
+    #    np.array([[0.5,0],[1,0],[1,1],[0,1],[0,0.5],[0.5,0.5],[0.5,0]]),
+    #    np.array([[0,0],[1,0],[1,1],[0.5,1],[0.5,0.5],[0,0.5],[0,0]]),
+    #    np.array([[0,0],[0.5,0],[0.5,0.5],[1,0.5],[1,1],[0,1],[0,0]])
        ]
 hight=1
 test_names=[np.array([[0,0],[1,0],[1,0.5],[9/14,0.5],[9/14,hight],[7/14,hight],
@@ -122,7 +122,7 @@ def generate_data(names,  save_path, number_samples,Seed):
 if __name__=='__main__':
     pass
 # if False: 400 is good for n=20
-    # generate_data(names, Constants.train_path, number_samples=300, Seed=1)
+    generate_data(names, Constants.train_path, number_samples=300, Seed=1)
     generate_data(test_names,Constants.test_path,number_samples=1, Seed=800)
 
 else:

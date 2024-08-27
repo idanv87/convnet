@@ -162,7 +162,7 @@ def exp3b(model, sigma=0.1,l=0.2,mean=0):
     poly_in=None
     # poly_out=np.array([[0,0],[1,0],[1,4/14],[4/14,4/14],[4/14,1],[0,1],[0,0]])
     poly_out=np.array([[0,0],[0.5,0],[0.5,0.5],[1,0.5],[1,1],[0,1],[0,0]])
-    hight=10/14
+    hight=12/14
     poly_out=np.array([[0,0],[1,0],[1,0.5],[9/14,0.5],[9/14,hight],[7/14,hight],
                        [7/14,0.5],[5/14,0.5],[5/14,hight],[3/14,hight],[3/14,0.5],
                        [0,0.5],[0,0]])
@@ -171,7 +171,7 @@ def exp3b(model, sigma=0.1,l=0.2,mean=0):
     # poly_out=np.array([[0,0],[1,0],[1,5/14],[9/14,5/14],[9/14,1],[4/14,1],[4/14,5/14],[0,5/14],[0,0]])
     # poly_out=np.array([[2/14,2/14],[10/14,2/14],[10/14,3/14],[4/14,3/14],[4/14,10/14],[2/14,10/14],[2/14,2/14]])-np.array([2/14,2/14])
 
-    A, dom,mask, X,Y, X_ref, Y_ref, valid_indices=make_domain(57,poly_out)
+    A, dom,mask, X,Y, X_ref, Y_ref, valid_indices=make_domain(57 ,poly_out)
     # poly_out=np.array([[2/14,2/14],[1,2/14],[1,5/14],[9/14,5/14],[9/14,9/14],[4/14,9/14],[4/14,5/14],[2/14,5/14],[2/14,2/14]])
     # poly_out=np.array([[2/14,2/14],[10/14,2/14],[10/14,3/14],[4/14,3/14],[4/14,10/14],[2/14,10/14],[2/14,2/14]])-np.array([2/14,2/14])
     # poly_out=np.array([[0,2/14],[3/14,2/14],[3/14,0],[6/14,0],[6/14,2/14],[8/14,2/14],
@@ -212,7 +212,7 @@ def exp3b(model, sigma=0.1,l=0.2,mean=0):
         # print(iters)
         # print(err)
         
-        err, color, J, alpha, iters, iter_counter, time_counter=hints(A,b,x0,J=300, alpha=0.3,X=X,Y=Y,X_ref=X_ref,Y_ref=Y_ref,dom=dom,mask=mask, valid_indices=valid_indices, model=model, good_indices=good_indices, poly_out=poly_out,poly_in=poly_in)  
+        err, color, J, alpha, iters, iter_counter, time_counter=hints(A,b,x0,J=70, alpha=0.3,X=X,Y=Y,X_ref=X_ref,Y_ref=Y_ref,dom=dom,mask=mask, valid_indices=valid_indices, model=model, good_indices=good_indices, poly_out=poly_out,poly_in=poly_in)  
         all_iter.append(iters)
         all_time.append(time_counter)
 
