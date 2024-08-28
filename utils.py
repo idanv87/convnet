@@ -544,6 +544,7 @@ class SelfAttention(nn.Module):
 def custom_softmax(x, dim):
     # Compute the exponentials of the input tensor
     exp_x = torch.exp(x)
+    exp_x[torch.isinf(exp_x)]=1e30
     
     # Sum the exponentials along the specified dimension
     sum_exp_x = torch.sum(exp_x, dim=dim, keepdim=True)
@@ -999,7 +1000,7 @@ def generate_polygon_vertices(n):
         angle = i * angle_increment
         x = math.cos(angle)
         y = math.sin(angle)
-        vertices.append((3/14*x+0.5, 3/14*y+0.5))
+        vertices.append((6/14*x+0.5, 6/14*y+0.5))
     
     vertices.append(vertices[0])
     return np.array(vertices)

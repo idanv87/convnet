@@ -30,7 +30,7 @@ from two_d_data_set import *
 from packages.my_packages import Gauss_zeidel, interpolation_2D, gs_new, Gauss_zeidel2
 
 # from two_d_model import  deeponet
-import  more_models_2, more_models_3, more_models_4, more_models_5, more_models_6, more_models_8
+import  more_models_2, more_models_3, more_models_4, more_models_5, more_models_6, more_models_7, more_models_8
 from test_deeponet import domain
 from main import generate_f_g
 
@@ -51,35 +51,40 @@ class TimeCounter:
         self.num_GS = 0
         self.num_gmres = 0
 
-model_single=more_models_2.deeponet(dim=2,f_shape=Constants.n**2, domain_shape=2, p=80) 
-best_model=torch.load(Constants.path+'runs/'+'2024.08.14.07.35.15best_model.pth', map_location=torch.device('cpu'))
-model_single.load_state_dict(best_model['model_state_dict'])
+# model_single=more_models_2.deeponet(dim=2,f_shape=Constants.n**2, domain_shape=2, p=80) 
+# best_model=torch.load(Constants.path+'runs/'+'2024.08.14.07.35.15best_model.pth', map_location=torch.device('cpu'))
+# model_single.load_state_dict(best_model['model_state_dict'])
 
-model_mult=more_models_2.deeponet(dim=2,f_shape=Constants.n**2, domain_shape=2, p=80) 
-best_model=torch.load(Constants.path+'runs/'+'2024.08.14.08.35.39best_model.pth', map_location=torch.device('cpu'))
-model_mult.load_state_dict(best_model['model_state_dict'])
+# model_mult=more_models_2.deeponet(dim=2,f_shape=Constants.n**2, domain_shape=2, p=80) 
+# best_model=torch.load(Constants.path+'runs/'+'2024.08.14.08.35.39best_model.pth', map_location=torch.device('cpu'))
+# model_mult.load_state_dict(best_model['model_state_dict'])
 
-model_mult_3=more_models_3.deeponet(dim=2,f_shape=Constants.n**2, domain_shape=2, p=80) 
-best_model=torch.load(Constants.path+'runs/'+'2024.08.20.04.03.38best_model.pth', map_location=torch.device('cpu'))
-model_mult_3.load_state_dict(best_model['model_state_dict'])
-
-
-model_mult_4=more_models_4.deeponet(dim=2,f_shape=Constants.n**2, domain_shape=2, p=80) 
-best_model=torch.load(Constants.path+'runs/'+'2024.08.20.08.55.58best_model.pth', map_location=torch.device('cpu'))
-model_mult_4.load_state_dict(best_model['model_state_dict'])
-
-model_mult_5=more_models_5.deeponet(dim=2,f_shape=Constants.n**2, domain_shape=2, p=80) 
-best_model=torch.load(Constants.path+'runs/'+'2024.08.26.04.32.13best_model.pth', map_location=torch.device('cpu'))
-model_mult_5.load_state_dict(best_model['model_state_dict'])
-
-model_single_6=more_models_6.vannila_deeponet(dim=2,f_shape=Constants.n**2, domain_shape=2, p=80) 
-best_model=torch.load(Constants.path+'runs/'+'2024.08.26.10.35.07best_model.pth', map_location=torch.device('cpu'))
-model_single_6.load_state_dict(best_model['model_state_dict'])
+# model_mult_3=more_models_3.deeponet(dim=2,f_shape=Constants.n**2, domain_shape=2, p=80) 
+# best_model=torch.load(Constants.path+'runs/'+'2024.08.20.04.03.38best_model.pth', map_location=torch.device('cpu'))
+# model_mult_3.load_state_dict(best_model['model_state_dict'])
 
 
-model_mult_8=more_models_8.deeponet(dim=2,f_shape=Constants.n**2, domain_shape=2, p=80) 
-best_model=torch.load(Constants.path+'runs/'+'2024.08.26.11.31.36best_model.pth', map_location=torch.device('cpu'))
-model_mult_8.load_state_dict(best_model['model_state_dict'])
+# model_mult_4=more_models_4.deeponet(dim=2,f_shape=Constants.n**2, domain_shape=2, p=80) 
+# best_model=torch.load(Constants.path+'runs/'+'2024.08.20.08.55.58best_model.pth', map_location=torch.device('cpu'))
+# model_mult_4.load_state_dict(best_model['model_state_dict'])
+
+# model_mult_5=more_models_5.deeponet(dim=2,f_shape=Constants.n**2, domain_shape=2, p=80) 
+# best_model=torch.load(Constants.path+'runs/'+'2024.08.26.04.32.13best_model.pth', map_location=torch.device('cpu'))
+# model_mult_5.load_state_dict(best_model['model_state_dict'])
+
+# model_single_6=more_models_6.vannila_deeponet(dim=2,f_shape=Constants.n**2, domain_shape=2, p=80) 
+# best_model=torch.load(Constants.path+'runs/'+'2024.08.26.10.35.07best_model.pth', map_location=torch.device('cpu'))
+# model_single_6.load_state_dict(best_model['model_state_dict'])
+
+# model_mult_7=more_models_7.deeponet(dim=2,f_shape=Constants.n**2, domain_shape=2, p=80) 
+# best_model=torch.load(Constants.path+'runs/'+'2024.08.26.20.04.13best_model.pth', map_location=torch.device('cpu'))
+# model_mult_7.load_state_dict(best_model['model_state_dict'])
+
+
+
+# model_mult_8=more_models_8.deeponet(dim=2,f_shape=Constants.n**2, domain_shape=2, p=80) 
+# best_model=torch.load(Constants.path+'runs/'+'2024.08.26.11.31.36best_model.pth', map_location=torch.device('cpu'))
+# model_mult_8.load_state_dict(best_model['model_state_dict'])
 
 def conv_NN(int_points,F,dom,mask,sgnd,model):
     sgnd=torch.tensor(sgnd.flatten(), dtype=torch.float32)  
@@ -152,26 +157,26 @@ def hints(A,b,x0, J, alpha,X,Y,X_ref,Y_ref,dom,mask, valid_indices, model, good_
 
             time_counter=time.time()-start
             print(f' hints took: {time.time()-start} with {k} iteration and with error {err[-1]}')
-            break
+            return err, J,k, time_counter
              
 
-    return err, color, J, alpha,k, iter_counter, time_counter 
+    return err, J,k, time_counter 
 
 
-def exp3b(model, sigma=0.1,l=0.2,mean=0):
-    poly_in=None
+def exp3b(model,J,N, sigma=0.1,l=0.2,mean=0,poly_out=None,poly_in=None,path=None):
+    # poly_in=None
     # poly_out=np.array([[0,0],[1,0],[1,4/14],[4/14,4/14],[4/14,1],[0,1],[0,0]])
-    poly_out=np.array([[0,0],[0.5,0],[0.5,0.5],[1,0.5],[1,1],[0,1],[0,0]])
-    hight=12/14
-    poly_out=np.array([[0,0],[1,0],[1,0.5],[9/14,0.5],[9/14,hight],[7/14,hight],
-                       [7/14,0.5],[5/14,0.5],[5/14,hight],[3/14,hight],[3/14,0.5],
-                       [0,0.5],[0,0]])
+    # poly_out=np.array([[0,0],[0.5,0],[0.5,0.5],[1,0.5],[1,1],[0,1],[0,0]])
+    # hight=12/14
+    # poly_out=np.array([[0,0],[1,0],[1,0.5],[9/14,0.5],[9/14,hight],[7/14,hight],
+                    #    [7/14,0.5],[5/14,0.5],[5/14,hight],[3/14,hight],[3/14,0.5],
+                    #    [0,0.5],[0,0]])
     # poly_out,A, dom,mask, X,Y, X_ref, Y_ref, valid_indices=torch.load(Constants.outputs_path+'two_stripes.pt')
     # poly_out=np.array([[0,0],[1,0],[1,3/14],[3/14,3/14],[3/14,5/14],[1,5/14],[1,1],[0,1],[0,0]])
     # poly_out=np.array([[0,0],[1,0],[1,5/14],[9/14,5/14],[9/14,1],[4/14,1],[4/14,5/14],[0,5/14],[0,0]])
     # poly_out=np.array([[2/14,2/14],[10/14,2/14],[10/14,3/14],[4/14,3/14],[4/14,10/14],[2/14,10/14],[2/14,2/14]])-np.array([2/14,2/14])
 
-    A, dom,mask, X,Y, X_ref, Y_ref, valid_indices=make_domain(57 ,poly_out)
+    A, dom,mask, X,Y, X_ref, Y_ref, valid_indices=make_domain(N ,poly_out)
     # poly_out=np.array([[2/14,2/14],[1,2/14],[1,5/14],[9/14,5/14],[9/14,9/14],[4/14,9/14],[4/14,5/14],[2/14,5/14],[2/14,2/14]])
     # poly_out=np.array([[2/14,2/14],[10/14,2/14],[10/14,3/14],[4/14,3/14],[4/14,10/14],[2/14,10/14],[2/14,2/14]])-np.array([2/14,2/14])
     # poly_out=np.array([[0,2/14],[3/14,2/14],[3/14,0],[6/14,0],[6/14,2/14],[8/14,2/14],
@@ -212,14 +217,15 @@ def exp3b(model, sigma=0.1,l=0.2,mean=0):
         # print(iters)
         # print(err)
         
-        err, color, J, alpha, iters, iter_counter, time_counter=hints(A,b,x0,J=70, alpha=0.3,X=X,Y=Y,X_ref=X_ref,Y_ref=Y_ref,dom=dom,mask=mask, valid_indices=valid_indices, model=model, good_indices=good_indices, poly_out=poly_out,poly_in=poly_in)  
+        err, J, iters, time_counter=hints(A,b,x0,J=J, alpha=0.3,X=X,Y=Y,X_ref=X_ref,Y_ref=Y_ref,dom=dom,mask=mask, valid_indices=valid_indices, model=model, good_indices=good_indices, poly_out=poly_out,poly_in=poly_in)  
         all_iter.append(iters)
         all_time.append(time_counter)
 
-    torch.save({'X':X, 'Y':Y,'all_iter':all_iter, 'all_time':all_time,'err':err}, Constants.outputs_path+'output14.pt')     
+    torch.save({'X':X, 'Y':Y,'all_iter':all_iter, 'all_time':all_time,'err':err}, path)     
     
+# exp3b(model_mult_7)  
 # exp3b(model_mult_8)  
-exp3b(model_mult_4)    
+# exp3b(model_mult_4)    
 # exp3b(model_mult_3) 
 # exp3b(model_single_6) 
 
