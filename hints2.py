@@ -113,7 +113,7 @@ def hints(A,b,x0, J, alpha,X,Y,X_ref,Y_ref,dom,mask, valid_indices, model, good_
     err=[]
     color=[]
     start=time.time()
-    for k in range(12000):
+    for k in range(24000):
       
         if (k+1)%J==0:
         
@@ -142,9 +142,9 @@ def hints(A,b,x0, J, alpha,X,Y,X_ref,Y_ref,dom,mask, valid_indices, model, good_
             
         else:
             # start=time.time()  
-            x0=Gauss_zeidel2(U,L,b,x0)
+            # x0=Gauss_zeidel2(U,L,b,x0)
             iter_counter.num_gmres_iterations+=1
-            # x0,_,iter,_=solve_gmres(A,b,x0,maxiter=30, tol=1e-10)
+            x0,_,iter,_=solve_gmres(A,b,x0,maxiter=30, tol=1e-10)
 
         if k %50 ==0:   
             pass 
