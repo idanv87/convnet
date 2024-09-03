@@ -97,7 +97,7 @@ def exp2(poly_out, model,J, N):
 data=[]
 for i,p in enumerate(polygons):
     for j,m in enumerate(models):
-        mean, std,err=exp2(p,m,200,113)
+        mean, std,err=exp2(p,m,40,57)
         data.append(('polygon'+str(i+1),'model'+str(j+1),mean,std,err))
 torch.save(data,Constants.outputs_path+'output2.pt')
 

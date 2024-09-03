@@ -227,12 +227,12 @@ def exp3b(model,J,N, sigma=0.1,l=0.2,mean=0,poly_out=None,poly_in=None,path=None
     all_iter=[]
     all_time=[]
     all_err=[]
-    
+    f=generate_grf(X,Y,n_samples=20,sigma=0.7,l=0.1,mean=10)
     for i in range(20):
         # b=dft[:,i]
         # b=np.cos(6*math.pi*np.array(X))*np.cos(6*math.pi*np.array(Y))
         # b=np.exp(np.array(X)**2)
-        b=np.random.normal(10,10,A.shape[0])
+        b=f[i]
         # b=np.sin(math.pi*3*np.array(X))
         # u=scipy.sparse.linalg.spsolve(A, b)
         f_ref[valid_indices]=b[good_indices]
