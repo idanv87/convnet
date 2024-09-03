@@ -134,4 +134,37 @@ def generate_my_naca():
 #     plt.scatter(X,Y)
 #     plt.show(block=False)
 
-  
+
+
+        # if ((l % 2)>0):    
+        #     n-=mat[int((l-1)/2)][int((l-1)/2)] 
+        
+def func(n,roll_max):
+    sum=0
+    if n==1:
+        
+        for i in range(6):
+            if roll_max[i]>0:
+                sum+=1
+        return sum        
+
+    for i in range(6):
+        x=roll_max.copy()
+        o=[2,1,1,3,3,2]
+        o[i]=x[i]-1
+        if (x[i]-1)<0:
+            sum+=0
+        else:
+            sum+=func(n-1,o)
+    
+    
+    return sum    
+
+# n=4
+# rollMax=[2,1,1,3,3,2]
+# n=2
+# rollMax=[1,1,2,2,2,3]
+# print(func(n,rollMax))
+
+        
+        

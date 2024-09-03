@@ -22,7 +22,7 @@ from memory_profiler import memory_usage, profile
 import sys
 
 
-from utils import upsample, fft, solve_gmres, track, find_sub_indices, GS_method, generate_polygon_vertices, plot_matrix, sgnd_distance
+from utils import upsample, fft, solve_gmres, track, find_sub_indices, GS_method, generate_polygon_vertices, plot_matrix, sgnd_distance, DFT_matrix
 from constants import Constants
 from utils import  grf, evaluate_model, generate_grf, np_wn, SelfAttention2, generate_polygon_vertices
 
@@ -129,22 +129,30 @@ def hints(A,b,x0, J, alpha,X,Y,X_ref,Y_ref,dom,mask, valid_indices, model, good_
             
             f_ref_real[valid_indices]=(f_real)/(s_real+1e-15)
             f_ref_imag[valid_indices]=(f_imag)/(s_imag+1e-15)
+            
+            # with concurrent.futures.ProcessPoolExecutor() as executor:
+            #         future_f = executor.submit(conv_NN,int_points,f_ref_real,dom,mask,sgnd, model)
+            #         future_g = executor.submit(conv_NN,int_points,f_ref_imag,dom,mask,sgnd, model)
 
-            corr_real=(conv_NN(int_points,f_ref_real,dom,mask,sgnd, model))*s_real
+            # corr_real = future_f.result()*s_real
+            # corr_imag = future_g.result()*s_imag
+            
+            corr_real=(conv_NN(int_points,f_ref_real,dom,mask,sgnd, model))*(s_real+1e-15)
             iter_counter.num_NN_iterations+=1
 
         
-            corr_imag=(conv_NN(int_points,f_ref_imag,dom,mask,sgnd, model))*s_imag
+            corr_imag=(conv_NN(int_points,f_ref_imag,dom,mask,sgnd, model))*(s_imag+1e-15)
             iter_counter.num_NN_iterations+=1
             corr=corr_real+1J*corr_imag
             x0=x0+corr
   
             
         else:
-            # start=time.time()  
-            # x0=Gauss_zeidel2(U,L,b,x0)
-            iter_counter.num_gmres_iterations+=1
-            x0,_,iter,_=solve_gmres(A,b,x0,maxiter=30, tol=1e-10)
+            x0=Gauss_zeidel2(U,L,b,x0)
+            
+            # x0,_,iter,_=solve_gmres(A,b,x0,maxiter=30, tol=1e-10)
+            # iter_counter.num_gmres_iterations+=iter
+           
 
         if k %50 ==0:   
             pass 
@@ -157,6 +165,8 @@ def hints(A,b,x0, J, alpha,X,Y,X_ref,Y_ref,dom,mask, valid_indices, model, good_
 
             time_counter=time.time()-start
             print(f' hints took: {time.time()-start} with {k} iteration and with error {err[-1]}')
+            print(f' deeponet took: {iter_counter.num_NN_iterations} iterations')
+            print(f' gmres took: {iter_counter.num_gmres_iterations} iterations')
             return err, J,k, time_counter
              
 
@@ -164,6 +174,10 @@ def hints(A,b,x0, J, alpha,X,Y,X_ref,Y_ref,dom,mask, valid_indices, model, good_
 
 
 def exp3b(model,J,N, sigma=0.1,l=0.2,mean=0,poly_out=None,poly_in=None,path=None):
+    # model.eval()
+    # poly_out,A, dom,mask, X,Y, X_ref, Y_ref, valid_indices=torch.load(Constants.outputs_path+'polygon2.pt')
+    A, dom,mask, X,Y, X_ref, Y_ref, valid_indices=make_domain(N ,poly_out)
+
     # poly_in=None
     # poly_out=np.array([[0,0],[1,0],[1,4/14],[4/14,4/14],[4/14,1],[0,1],[0,0]])
     # poly_out=np.array([[0,0],[0.5,0],[0.5,0.5],[1,0.5],[1,1],[0,1],[0,0]])
@@ -176,16 +190,25 @@ def exp3b(model,J,N, sigma=0.1,l=0.2,mean=0,poly_out=None,poly_in=None,path=None
     # poly_out=np.array([[0,0],[1,0],[1,5/14],[9/14,5/14],[9/14,1],[4/14,1],[4/14,5/14],[0,5/14],[0,0]])
     # poly_out=np.array([[2/14,2/14],[10/14,2/14],[10/14,3/14],[4/14,3/14],[4/14,10/14],[2/14,10/14],[2/14,2/14]])-np.array([2/14,2/14])
 
-    A, dom,mask, X,Y, X_ref, Y_ref, valid_indices=make_domain(N ,poly_out)
+    # torch.save((poly_out,A,dom,mask, X, Y,X_ref,Y_ref, valid_indices), Constants.outputs_path+'polygon0.pt')
+
+    # torch.save((poly_out,A,dom,mask, X, Y,X_ref,Y_ref, valid_indices), Constants.outputs_path+'poly7.pt')
+    # poly_out,A, dom,mask, X,Y, X_ref, Y_ref, valid_indices=torch.load(Constants.outputs_path+'polygon1.pt')
+    
     # poly_out=np.array([[2/14,2/14],[1,2/14],[1,5/14],[9/14,5/14],[9/14,9/14],[4/14,9/14],[4/14,5/14],[2/14,5/14],[2/14,2/14]])
     # poly_out=np.array([[2/14,2/14],[10/14,2/14],[10/14,3/14],[4/14,3/14],[4/14,10/14],[2/14,10/14],[2/14,2/14]])-np.array([2/14,2/14])
     # poly_out=np.array([[0,2/14],[3/14,2/14],[3/14,0],[6/14,0],[6/14,2/14],[8/14,2/14],
                     #    [8/14,5/14],[6/14,5/14],[6/14,8/14],[3/14,8/14],[3/14,5/14],[0,5/14],[0,2/14]])+np.array([7/14,0])
     # poly_out=generate_polygon_vertices(30)-np.array([3/14,3/14])
+    
     # poly_out=np.array([[0,0],[1,0],[1,0.5],[0.5,0.5],[0.5,1],[0,1],[0,0]])
 
     # torch.save((poly_out,A,dom,mask, X, Y,X_ref,Y_ref, valid_indices), Constants.outputs_path+'two_stripes.pt')
-    # A,dom,mask, X,Y, X_ref, Y_ref, valid_indices, poly_out, poly_in=generate_obstacle2(57)
+    # A,dom,mask, X,Y, X_ref, Y_ref, valid_indices, poly_out, poly_in=generate_obstacle2(225)
+    # torch.save((poly_out,A,dom,mask, X, Y,X_ref,Y_ref, valid_indices), Constants.outputs_path+'obs1.pt')
+    # torch.save((poly_out,A,dom,mask, X, Y,X_ref,Y_ref, valid_indices), Constants.outputs_path+'obs2.pt')
+    # poly_out,A, dom,mask, X,Y, X_ref, Y_ref, valid_indices=torch.load(Constants.outputs_path+'obs2.pt')
+
     # plt.scatter(X,Y);plt.show()
     
     
@@ -203,10 +226,13 @@ def exp3b(model,J,N, sigma=0.1,l=0.2,mean=0,poly_out=None,poly_in=None,path=None
    
     all_iter=[]
     all_time=[]
-    for i in range(1):
+    all_err=[]
+    dft=DFT_matrix(A.shape[0])
+    for i in range(20):
+        # b=dft[:,i]
         # b=np.cos(6*math.pi*np.array(X))*np.cos(6*math.pi*np.array(Y))
         # b=np.exp(np.array(X)**2)
-        b=np.random.normal(10,10,A.shape[0])
+        b=np.random.normal(10,1,A.shape[0])
         # u=scipy.sparse.linalg.spsolve(A, b)
         f_ref[valid_indices]=b[good_indices]
         
@@ -216,12 +242,16 @@ def exp3b(model,J,N, sigma=0.1,l=0.2,mean=0,poly_out=None,poly_in=None,path=None
         # print(time_counter)
         # print(iters)
         # print(err)
+        # return 
         
         err, J, iters, time_counter=hints(A,b,x0,J=J, alpha=0.3,X=X,Y=Y,X_ref=X_ref,Y_ref=Y_ref,dom=dom,mask=mask, valid_indices=valid_indices, model=model, good_indices=good_indices, poly_out=poly_out,poly_in=poly_in)  
         all_iter.append(iters)
-        all_time.append(time_counter)
-
-    torch.save({'X':X, 'Y':Y,'all_iter':all_iter, 'all_time':all_time,'err':err}, path)     
+        all_err.append(err[-1])
+        # all_time.append(time_counter)
+    
+    # print(np.mean(all_iter))
+    # print(np.mean(all_iter))
+    torch.save({'X':X, 'Y':Y,'all_iter':all_iter, 'all_time':all_time,'err':all_err}, path)     
     
 # exp3b(model_mult_7)  
 # exp3b(model_mult_8)  

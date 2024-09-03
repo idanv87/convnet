@@ -40,7 +40,8 @@ class norms:
          +torch.linalg.norm(torch.imag(x)-torch.imag(y))/(torch.linalg.norm(torch.imag(y))+1e-10)       
         )
         except:
-            return torch.linalg.norm(x-y)/(torch.linalg.norm(y)+1e-10)
+            pass
+            # return torch.linalg.norm(x-y)/(torch.linalg.norm(y)+1e-10)
     @classmethod
     def relative_L1(cls,x,y):
         return torch.nn.L1Loss()(x,y)/(torch.nn.L1Loss(y,y*0)+1e-10)
@@ -1069,4 +1070,9 @@ def plot_results(x, y_pred, y_test):
     ax[1].set_title('pred')
     # ax[2].set_title('error')
 
-        
+def DFT_matrix(N):
+    import math
+    i, j = np.meshgrid(np.arange(N), np.arange(N))
+    omega = np.exp( - 2 * math.pi * 1J / N )
+    W = np.power( omega, i * j ) / np.sqrt(N)
+    return W
