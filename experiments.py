@@ -1,6 +1,12 @@
 import numpy as np
 from hints2 import *
+import pandas as pd
 
+
+def print_with_lines(df, interval=4):
+    for i in range(0, len(df), interval):
+        print(df.iloc[i:i+interval])
+        print('-' * 30)  # This is the horizontal line
 # for i,poly_out in enumerate(polygons):
         # print(i)
         # A, dom,mask, X,Y, X_ref, Y_ref, valid_indices=make_domain(225 ,poly_out)
@@ -78,17 +84,26 @@ def exp1(poly_out, model,J, N):
     print(data['err'][-1]) 
 
 def exp2(poly_out, model,J, N):
-    path=Constants.outputs_path+'output2.pt'
+    path=Constants.outputs_path+'output0.pt'
     exp3b(model,J=J,N=N, poly_out=poly_out, path=path)
     data=torch.load(path)
     print(np.mean(data['all_iter']))    
     print(np.std(data['all_iter']))     
     print(np.max(data['err'])) 
+    return np.mean(data['all_iter']), np.std(data['all_iter']), np.max(data['err'])
     
     
-# exp1(polygons[5],models[2],50,57)
-exp2(polygons[10],models[-1],40,57)
+# exp1(polygons[5],models[2],50,57)n
+data=[]
+for i,p in enumerate(polygons):
+    for j,m in enumerate(models):
+        mean, std,err=exp2(p,m,200,113)
+        data.append(('polygon'+str(i+1),'model'+str(j+1),mean,std,err))
+torch.save(data,Constants.outputs_path+'output2.pt')
 
+data=torch.load(Constants.outputs_path+'output2.pt')
+df = pd.DataFrame(data, columns=['', '', 'mean','std','err'])
+print_with_lines(df)
 
 def plot_polygons(fig_path='/Users/idanversano/Documents/project_geo_deeponet/tex/figures/attention_deeponet/'):
 
