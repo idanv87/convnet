@@ -90,20 +90,30 @@ def exp2(poly_out, model,J, N):
     print(np.mean(data['all_iter']))    
     print(np.std(data['all_iter']))     
     print(np.max(data['err'])) 
-    return np.mean(data['all_iter']), np.std(data['all_iter']), np.max(data['err'])
+    return np.mean(data['all_iter']), np.std(data['all_iter']), np.max(data['err']), np.mean(data['all_time'])
     
-    
-# exp1(polygons[5],models[2],50,57)n
-data=[]
-for i,p in enumerate(polygons):
-    for j,m in enumerate(models):
-        mean, std,err=exp2(p,m,40,57)
-        data.append(('polygon'+str(i+1),'model'+str(j+1),mean,std,err))
-torch.save(data,Constants.outputs_path+'output2.pt')
 
-data=torch.load(Constants.outputs_path+'output2.pt')
-df = pd.DataFrame(data, columns=['', '', 'mean','std','err'])
-print_with_lines(df)
+def exp3(poly_out, model,J, N):
+    path=Constants.outputs_path+'output00.pt'
+    exp3b(model,J=J,N=N, poly_out=poly_out, path=path,num_samples=1)
+    data=torch.load(path)
+    print(np.mean(data['all_iter']))    
+    print(np.std(data['all_iter']))     
+    print(np.max(data['err'])) 
+
+exp3(polygons[5],models[2],100,57)
+ 
+# exp1(polygons[5],models[2],50,57)n
+# data=[]
+# for i,p in enumerate(polygons):
+#     for j,m in enumerate(models):
+#         mean, std,err,cpu_time=exp2(p,m,40,57)
+#         data.append(('polygon'+str(i+1),'model'+str(j+1),mean,std,err,cpu_time))
+# torch.save(data,Constants.outputs_path+'output2.pt')
+
+# data=torch.load(Constants.outputs_path+'output2.pt')
+# df = pd.DataFrame(data, columns=['', '', 'mean','std','err','cpu_time'])
+# print_with_lines(df)
 
 def plot_polygons(fig_path='/Users/idanversano/Documents/project_geo_deeponet/tex/figures/attention_deeponet/'):
 

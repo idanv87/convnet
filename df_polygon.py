@@ -767,38 +767,209 @@ def make_obstacle(N,poly):
              
     return csr_matrix(D), dom,mask, X,Y, X_ref, Y_ref, valid_indices
 
+class Point:
+    def __init__(self, x,y, original_index):
+        self.x=x
+        self.y=y
+        self.original_index=original_index
+        self.left=None
+        self.right=None
+        self.up=None
+        self.down=None
 
-# A1, dom,mask, X,Y, X_ref, Y_ref, valid_indices=generate_example_2(15)  
-# plt.scatter(X_ref,Y_ref,color='red')
-
-# poly=np.array([[0,0],[1.0001,0.],[1.001,0.5],[0.75,0.5],[0.75,1.0001],[0.25,1.0001],[0.25,0.5],[0,0.5],[0,0]])
-# A2, dom,mask, X,Y, X_ref, Y_ref, valid_indices=make_domain(15,poly)
-# plt.scatter(X,Y,color='black')
-# plt.show()
-# A=A1-A2
-
-# print(A2[0,1])
-
-# print(A2.shape)
-# 
+      
         
-    # k=0
-    # for i in range(len(X_ref)):
-    #     plt.scatter(X_ref[i],Y_ref[i])
-    #     plt.text(X_ref[i],Y_ref[i],str(k))
-    #     k+=1
+def func(x,y,poly=np.array([[0,0],[1,0],[1,3/14],[3/14,3/14],[3/14,5/14],[1,5/14],[1,1],[0,1],[0,0]])):
+    pt=(x,y)
+    value= sgnd_distance(pt,poly)
+    if abs(value)<1e-14:
+        return 1
+    if value>0:
+        return 1
+    if value<0:
+        return 0
+    
+def is_inside(x,y,polys):
+    rect=np.array([[0,0],[1,0],[1,1],[0,1],[0,0]])    
+    value0=func(x,y,rect)
+    value1=np.sum([func(x,y,poly) for poly in polys])
+    dist_out=[]
+    for poly in polys:
+        dist_out.append(np.sum([is_between(poly[i],poly[i+1],(x,y)) for i in range(len(poly)-1)])>1e-12)
+        
+    value2=np.sum(dist_out)   
+ 
+    if (value0==1 and value1==0) or  (value0==1 and value2>0):
+        return 1
+    return 0
+    
+polys=[np.array([[2/14,2/14],[6/14,2/14],[6/14,3/14],[4/14,3/14],[4/14,6/14],[2/14,6/14],[2/14,2/14]]),
+       np.array([[4/14,9/14],[7/14,9/14],[7/14,10/14],[6/14,10/14],[6/14,11/14],[7/14,11/14],[7/14,12/14],[4/14,12/14],[4/14,9/14]]),
+    #    np.array([[9/14,6/14],[12/14,6/14],[12/14,9/14],[9/14,9/14],[9/14,6/14]])
+       ]
+
+
+def Obstacle(N=29,polys=polys):      
+    
+    x_ref=np.linspace(0,1,Constants.n)
+    y_ref=np.linspace(0,1,Constants.n)
+    X_ref=[]
+    Y_ref=[]
+    for i in range(Constants.n):
+        for j in range(Constants.n):
+            if is_inside(x_ref[i],y_ref[j],polys):
+                X_ref.append(x_ref[i])
+                Y_ref.append(y_ref[j])
+    
+    x=np.linspace(0,1,N)
+    y=np.linspace(0,1,N)
+    Pts=[]
+    X=[]
+    Y=[]
+    for i in range(N):
+        for j in range(N):
+            if is_inside(x[i],y[j],polys):
+                Pts.append(Point(x[i],y[j],(i,j)))
+                X.append(x[i])
+                Y.append(y[j])
+    
+    Grid_points=np.vstack((X,Y)).T
+    h=1/(N-1)
+    Dx=lil_matrix(np.zeros((len(Pts),len(Pts)))).astype(complex)
+    for k,p in enumerate(Pts):
+        I=p.original_index[0]
+        J=p.original_index[1]
+        if I==0:
+            p.left=(-10,-10)   
+        else:
+            p.left=(x[I-1],y[J])
+        if I==(N-1):
+            p.right=(10,10)     
+        else:
+            p.right=(x[I+1],y[J])  
+              
+    for k,p in enumerate(Pts):
+        I=p.original_index[0]
+        J=p.original_index[1]
+        left=p.left
+        right=p.right
+        if I==0:
+            p.bc="R"
+            kr=np.argmin(np.linalg.norm(np.array([right[0],right[1]])-Grid_points, axis=1))
+            Dx[k,kr]=2/(h**2)
+            Dx[k,k]=(-2-2*(h*Constants.l))/(h**2) 
+        if I==(N-1):
+            p.bc="R"
+            kl=np.argmin(np.linalg.norm(np.array([left[0],left[1]])-Grid_points, axis=1))
+            Dx[k,kl]=2/(h**2)
+            Dx[k,k]=(-2-2*(h*Constants.l))/(h**2) 
+            
+        if I>0 and I<(N-1):
+            if is_inside(left[0],left[1],polys)==0:
+                p.bc="D"
+                kr=np.argmin(np.linalg.norm(np.array([right[0],right[1]])-Grid_points, axis=1))
+                Dx[k,kr]=1/(h**2)
+                Dx[k,k]=(-2)/(h**2) 
+            
+            if is_inside(right[0],right[1],polys)==0:
+                p.bc="D"
+                kl=np.argmin(np.linalg.norm(np.array([left[0],left[1]])-Grid_points, axis=1))
+                Dx[k,kl]=1/(h**2)
+                Dx[k,k]=(-2)/(h**2)   
+            
+            if is_inside(left[0],left[1],polys) and is_inside(right[0],right[1],polys):
+                p.bc="N"
+                kr=np.argmin(np.linalg.norm(np.array([right[0],right[1]])-Grid_points, axis=1))
+                kl=np.argmin(np.linalg.norm(np.array([left[0],left[1]])-Grid_points, axis=1))
+                Dx[k,kl]=1/(h**2)
+                Dx[k,k]=(-2)/(h**2) 
+                Dx[k,kr]=1/(h**2) 
+                
+    
+    Dy=lil_matrix(np.zeros((len(Pts),len(Pts)))).astype(complex)
+    for k,p in enumerate(Pts):
+        I=p.original_index[0]
+        J=p.original_index[1]
+        if J==0:
+            p.down=(-10,-10)   
+        else:
+            p.down=(x[I],y[J-1])
+        if J==(N-1):
+            p.up=(10,10)     
+        else:
+            p.up=(x[I],y[J+1])  
+              
+    for k,p in enumerate(Pts):
+        I=p.original_index[0]
+        J=p.original_index[1]
+        down=p.down
+        up=p.up
+        if J==0:
+            p.bc="R"
+            ku=np.argmin(np.linalg.norm(np.array([up[0],up[1]])-Grid_points, axis=1))
+            Dy[k,ku]=2/(h**2)
+            Dy[k,k]=(-2-2*(h*Constants.l))/(h**2) 
+        if J==(N-1):
+            p.bc="R"
+            kd=np.argmin(np.linalg.norm(np.array([down[0],down[1]])-Grid_points, axis=1))
+            Dy[k,kd]=2/(h**2)
+            Dy[k,k]=(-2-2*(h*Constants.l))/(h**2) 
+            
+        if J>0 and J<(N-1):
+            if is_inside(down[0],down[1],polys)==0:
+                p.bc="D"
+                ku=np.argmin(np.linalg.norm(np.array([up[0],up[1]])-Grid_points, axis=1))
+                Dy[k,ku]=1/(h**2)
+                Dy[k,k]=(-2)/(h**2) 
+            
+            if is_inside(up[0],up[1],polys)==0:
+                p.bc="D"
+                kd=np.argmin(np.linalg.norm(np.array([down[0],down[1]])-Grid_points, axis=1))
+                Dy[k,kd]=1/(h**2)
+                Dy[k,k]=(-2)/(h**2)   
+            
+            if is_inside(down[0],down[1],polys) and is_inside(up[0],up[1],polys):
+                p.bc="N"
+                ku=np.argmin(np.linalg.norm(np.array([up[0],up[1]])-Grid_points, axis=1))
+                kd=np.argmin(np.linalg.norm(np.array([down[0],down[1]])-Grid_points, axis=1))
+                Dy[k,kd]=1/(h**2)
+                Dy[k,k]=(-2)/(h**2) 
+                Dy[k,ku]=1/(h**2) 
+    
+    D=Dx+Dy+Constants.k*scipy.sparse.identity(Dx.shape[0])
+    valid_indices, non_valid_indices=masking_coordinates(X, Y)     
+    d_ref=domain(np.linspace(0,1,Constants.n),np.linspace(0,1,Constants.n))
+    mask=mask_matrix(valid_indices)
+    mask=torch.tensor(mask, dtype=torch.float32)
+    dom=torch.tensor(np.hstack((d_ref.X.reshape(-1, 1), d_ref.Y.reshape(-1, 1))), dtype=torch.float32)         
+    
+
+    # for k,p in enumerate(Pts):
+    #     plt.scatter(p.x,p.y)
+    #     plt.text(p.x,p.y,p.bc)
+    #     # plt.text(p.x,p.y,str(k))
+                   
+    # plt.show()  
+    # plt.scatter(X,Y);plt.show()
+    return csr_matrix(D), dom,mask, X,Y, X_ref, Y_ref, valid_indices            
+    
+Obstacle()       
+
+            
+            
+        
+    
+            
+         
+        
+            
                 
 
-    # plt.show()   
+            
+        
+
+        
     
     
 
-# A,f_ref,f,dom,mask, X,Y, X_ref, Y_ref, valid_indices=generate_example_2()
 
-
-# generate_rect2(14)     
-# D,f,dom,mask=generate_example()
-
-# A, f_ref,f,dom,mask, X, Y, valid_indices =generate_rect2(30)
-# print(mask.shape)
-# print(f_ref.shape)

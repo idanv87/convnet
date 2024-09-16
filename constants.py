@@ -166,5 +166,6 @@ def func(n,roll_max):
 # rollMax=[1,1,2,2,2,3]
 # print(func(n,rollMax))
 
-        
+
+
         

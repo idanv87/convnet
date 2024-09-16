@@ -34,7 +34,7 @@ import  more_models_2, more_models_3, more_models_4, more_models_5, more_models_
 from test_deeponet import domain
 from main import generate_f_g
 
-from df_polygon import generate_example, generate_rect, generate_rect2, generate_example_2, generate_obstacle, generate_obstacle2, generate_two_obstacles, generate_example3, make_domain, make_obstacle
+from df_polygon import generate_example, generate_rect, generate_rect2, generate_example_2, generate_obstacle, generate_obstacle2, generate_two_obstacles, generate_example3, make_domain, make_obstacle, Obstacle
 # 2024.08.14.08.35.39best_model.pth several domains more_models2
 # 2024.08.14.07.35.15best_model.pth single domain more_models_2
 # 2024.08.20.04.03.38best_model.pth models_3 several no mask
@@ -150,11 +150,12 @@ def hints(A,b,x0, J, alpha,X,Y,X_ref,Y_ref,dom,mask, valid_indices, model, good_
         else:
             x0=Gauss_zeidel2(U,L,b,x0)
             
+            
             # x0,_,iter,_=solve_gmres(A,b,x0,maxiter=30, tol=1e-10)
             # iter_counter.num_gmres_iterations+=iter
            
 
-        if k %50 ==0:   
+        if k %100 ==0:   
             pass 
             print(np.linalg.norm(A@x0-b)/np.linalg.norm(b))
             
@@ -173,10 +174,11 @@ def hints(A,b,x0, J, alpha,X,Y,X_ref,Y_ref,dom,mask, valid_indices, model, good_
     return err, J,k, time_counter 
 
 
-def exp3b(model,J,N, sigma=0.1,l=0.2,mean=0,poly_out=None,poly_in=None,path=None):
+def exp3b(model,J,N, sigma=0.1,l=0.2,mean=0,poly_out=None,poly_in=None,path=None,num_samples=20):
     # model.eval()
     # poly_out,A, dom,mask, X,Y, X_ref, Y_ref, valid_indices=torch.load(Constants.outputs_path+'polygon1.pt')
-    A, dom,mask, X,Y, X_ref, Y_ref, valid_indices=make_domain(N ,poly_out)
+    # A, dom,mask, X,Y, X_ref, Y_ref, valid_indices=make_domain(N ,poly_out)
+    A, dom,mask, X,Y, X_ref, Y_ref, valid_indices=Obstacle(N=N)
 
     # poly_in=None
     # poly_out=np.array([[0,0],[1,0],[1,4/14],[4/14,4/14],[4/14,1],[0,1],[0,0]])
@@ -227,16 +229,10 @@ def exp3b(model,J,N, sigma=0.1,l=0.2,mean=0,poly_out=None,poly_in=None,path=None
     all_iter=[]
     all_time=[]
     all_err=[]
-    f=generate_grf(X,Y,n_samples=20,sigma=0.7,l=0.1,mean=10)
-    for i in range(20):
-        # b=dft[:,i]
-        # b=np.cos(6*math.pi*np.array(X))*np.cos(6*math.pi*np.array(Y))
-        # b=np.exp(np.array(X)**2)
+    f=generate_grf(X,Y,n_samples=20,sigma=0.7,l=0.8,mean=1)
+    for i in range(num_samples):
         b=f[i]
-        # b=np.sin(math.pi*3*np.array(X))
-        # u=scipy.sparse.linalg.spsolve(A, b)
         f_ref[valid_indices]=b[good_indices]
-        
         x0=(b+1J*b)*0.001
         
         # x,err,iters,time_counter=solve_gmres(A,b,x0)
@@ -248,7 +244,7 @@ def exp3b(model,J,N, sigma=0.1,l=0.2,mean=0,poly_out=None,poly_in=None,path=None
         err, J, iters, time_counter=hints(A,b,x0,J=J, alpha=0.3,X=X,Y=Y,X_ref=X_ref,Y_ref=Y_ref,dom=dom,mask=mask, valid_indices=valid_indices, model=model, good_indices=good_indices, poly_out=poly_out,poly_in=poly_in)  
         all_iter.append(iters)
         all_err.append(err[-1])
-        # all_time.append(time_counter)
+        all_time.append(time_counter)
     
     # print(np.mean(all_iter))
     # print(np.mean(all_iter))
